@@ -105,6 +105,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             add(L("Unpin all"), #selector(unpinAll), symbol: "pin.slash")
         }
         add(L("Note list…"), #selector(openList), symbol: "list.bullet.rectangle")
+        if Reminders.shared.isRinging { add(L("Silence reminders"), #selector(silence), symbol: "bell.slash") }
         add(L("Ask Foglietti…"), #selector(showAsk), symbol: "sparkles")
 
         let recent = store.notes.filter(\.isActive).sorted { $0.modified > $1.modified }.prefix(10)
@@ -139,6 +140,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @objc func unpinAll() { NotesManager.shared.unpinAll() }
     @objc func openList() { showList() }
     @objc func showAsk() { AskController.shared.show() }
+    @objc func silence() { Reminders.shared.stopAllRinging() }
     @objc func openNote(_ sender: NSMenuItem) {
         if let id = sender.representedObject as? UUID { NotesManager.shared.show(id, focus: true) }
     }

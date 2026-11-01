@@ -204,6 +204,7 @@ final class NoteTextView: NSTextView {
         }
         ts.endEditing()
         didChangeText()
+        if nowChecked { Sounds.ui(.tick) }
     }
 
     @objc func insertCheckbox(_ sender: Any?) {

@@ -7,6 +7,9 @@ import UserNotifications
 final class Reminders: NSObject, UNUserNotificationCenterDelegate {
     static let shared = Reminders()
     private var timer: Timer?
+    /// Notes whose reminder is still ringing (repeats), with the repeats left.
+    private var ringing: [UUID: (timer: Timer, left: Int)] = [:]
+    var isRinging: Bool { !ringing.isEmpty }
     private var store: NoteStore { NoteStore.shared }
     private var center: UNUserNotificationCenter? {
         Bundle.main.bundleIdentifier == nil ? nil : UNUserNotificationCenter.current()
@@ -33,7 +36,8 @@ final class Reminders: NSObject, UNUserNotificationCenterDelegate {
         let content = UNMutableNotificationContent()
         content.title = L("Reminder")
         content.body = n.title
-        content.sound = .default
+        // with the app running, the app plays the chosen sound itself (see willPresent)
+        content.sound = n.sound == "" || (n.sound == nil && store.settings.reminderSound.isEmpty) ? nil : .default
         let comps = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: date)
         let req = UNNotificationRequest(identifier: id.uuidString, content: content,
                                         trigger: UNCalendarNotificationTrigger(dateMatching: comps, repeats: false))
@@ -51,6 +55,45 @@ final class Reminders: NSObject, UNUserNotificationCenterDelegate {
         NotesManager.shared.show(id, focus: true)
         NSApp.requestUserAttention(.informationalRequest)
         if let w = NotesManager.shared.controllers[id]?.window { shake(w) }
+        if let n = store.note(id) { ring(n) }
+    }
+
+    // MARK: Sound
+
+    /// Plays the reminder sound (and voice), repeating it until the user touches the note.
+    private func ring(_ n: Note) {
+        let s = store.settings
+        guard n.importantReminder || !Sounds.inQuietHours(s) else { return }
+        let sound = n.sound ?? s.reminderSound
+        Sounds.play(sound, volume: s.soundVolume)
+        if s.speakReminders { Sounds.speak(n.title, volume: s.soundVolume) }
+        let total = n.importantReminder ? max(s.repeatCount, 5) : s.repeatCount
+        guard total > 1 else { return }
+        stopRinging(n.id)
+        let t = Timer.scheduledTimer(withTimeInterval: Double(max(1, s.repeatMinutes)) * 60, repeats: true) { _ in
+            Task { @MainActor in Reminders.shared.ringAgain(n.id, sound: sound) }
+        }
+        ringing[n.id] = (t, total - 1)
+    }
+
+    private func ringAgain(_ id: UUID, sound: String) {
+        guard let r = ringing[id], store.note(id) != nil else { stopRinging(id); return }
+        Sounds.play(sound, volume: store.settings.soundVolume)
+        if let w = NotesManager.shared.controllers[id]?.window { shake(w) }
+        if r.left <= 1 { stopRinging(id) } else { ringing[id] = (r.timer, r.left - 1) }
+    }
+
+    /// Called when the user clicks or types in the note, or from the menu bar.
+    func stopRinging(_ id: UUID) {
+        ringing[id]?.timer.invalidate()
+        ringing[id] = nil
+    }
+
+    func stopAllRinging() { ringing.keys.forEach(stopRinging) }
+
+    func setSound(_ id: UUID, _ sound: String?) {
+        store.update(id) { $0.sound = sound }
+        reschedule(id)
     }
 
     /// A little shake to get the note noticed.
@@ -73,7 +116,7 @@ final class Reminders: NSObject, UNUserNotificationCenterDelegate {
                                             withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
         let id = UUID(uuidString: notification.request.identifier)
         Task { @MainActor in if let id { Reminders.shared.fire(id) } }
-        completionHandler([.banner, .sound])
+        completionHandler([.banner])   // the app plays the chosen sound itself
     }
 
     nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse,

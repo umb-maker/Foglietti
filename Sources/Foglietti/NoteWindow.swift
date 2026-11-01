@@ -8,6 +8,11 @@ final class NoteWindow: NSWindow {
     override var canBecomeKey: Bool { true }
     override var canBecomeMain: Bool { true }
     override func performClose(_ sender: Any?) { noteController?.closeNote() }
+    override func sendEvent(_ event: NSEvent) {
+        // touching a ringing note silences it
+        if [.leftMouseDown, .keyDown].contains(event.type), let id = noteController?.noteID { Reminders.shared.stopRinging(id) }
+        super.sendEvent(event)
+    }
 }
 
 // MARK: - Container: background, border, corners
@@ -547,6 +552,7 @@ final class NoteWindowController: NSWindowController, NSWindowDelegate, NSTextVi
             }
             run.text = run.text.trimmingCharacters(in: .whitespacesAndNewlines)
             run.running = false
+            if run.error == nil { Sounds.ui(.done) }
         }
     }
 
@@ -749,8 +755,54 @@ final class NoteWindowController: NSWindowController, NSWindowDelegate, NSTextVi
             rm.target = self
             m.addItem(rm)
         }
+        m.addItem(.separator())
+        let important = NSMenuItem(title: L("Important (repeats, ignores quiet hours)"), action: #selector(toggleImportant), keyEquivalent: "")
+        important.target = self
+        important.state = applied?.importantReminder == true ? .on : .off
+        m.addItem(important)
+        let soundItem = NSMenuItem(title: L("Sound"), action: nil, keyEquivalent: "")
+        soundItem.image = NSImage(systemSymbolName: "speaker.wave.2", accessibilityDescription: nil)
+        soundItem.submenu = soundMenu()
+        m.addItem(soundItem)
         return m
     }
+
+    /// Per-note sound: the default one, none, a system sound or a file. Choosing one plays a preview.
+    private func soundMenu() -> NSMenu {
+        let m = NSMenu()
+        let current = applied?.sound
+        func add(_ title: String, _ value: String?) {
+            let i = NSMenuItem(title: title, action: #selector(chooseNoteSound(_:)), keyEquivalent: "")
+            i.target = self
+            i.representedObject = value
+            i.state = current == value ? .on : .off
+            m.addItem(i)
+        }
+        add(L("Default (%@)", Sounds.displayName(store.settings.reminderSound)), nil)
+        add(L("None"), "")
+        m.addItem(.separator())
+        Sounds.available.forEach { add($0, $0) }
+        if let c = current, c.hasPrefix("/") { add(Sounds.displayName(c), c) }
+        m.addItem(.separator())
+        let file = NSMenuItem(title: L("Choose a file…"), action: #selector(chooseNoteSoundFile), keyEquivalent: "")
+        file.target = self
+        m.addItem(file)
+        return m
+    }
+
+    @objc func chooseNoteSound(_ sender: NSMenuItem) {
+        let value = sender.representedObject as? String
+        Reminders.shared.setSound(noteID, value)
+        Sounds.play(value ?? store.settings.reminderSound, volume: store.settings.soundVolume)
+    }
+
+    @objc func chooseNoteSoundFile() {
+        guard let path = Sounds.chooseFile() else { return }
+        Reminders.shared.setSound(noteID, path)
+        Sounds.play(path, volume: store.settings.soundVolume)
+    }
+
+    @objc func toggleImportant() { store.update(noteID) { $0.importantReminder.toggle() } }
 
     @objc func setReminderPreset(_ sender: NSMenuItem) {
         if let d = sender.representedObject as? Date { Reminders.shared.set(noteID, at: d) }

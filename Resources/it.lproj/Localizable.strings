@@ -325,3 +325,31 @@
 "✅ Created the note “%@”." = "✅ Ho creato la nota «%@».";
 "🔔 Reminder set on the note “%@” %@." = "🔔 Promemoria impostato sulla nota «%@» %@.";
 "Welcome to Foglietti\n\nEverything is customizable: click 🎨 at the top for colors, fonts, opacity, corners, borders and themes.\n☐ Double-click the bar to collapse the note\n☐ ⌃⌥N creates a note from any app\n☐ ⇧⌘L adds a checkbox, click it to tick it\n☑ ✨ and 🌐 summarize, rewrite and translate your notes" = "Benvenuto in Foglietti\n\nOgni cosa è personalizzabile: clicca 🎨 in alto per colori, font, opacità, angoli, bordi e temi.\n☐ Doppio clic sulla barra per ridurre la nota\n☐ ⌃⌥N crea una nota da qualsiasi app\n☐ ⇧⌘L aggiunge una casella, clicca per spuntarla\n☑ ✨ e 🌐 riassumono, riscrivono e traducono le note";
+
+/* 1.1: suoni */
+"%ld min" = "%ld min";
+"A ringing reminder stops as soon as you click or type in the note, or from the menu bar. Notes marked Important ring at least 5 times. Each note can have its own sound: 🔔 → Sound." = "Un promemoria che suona si ferma appena clicchi o scrivi nella nota, oppure dalla barra dei menu. Le note segnate come Importanti suonano almeno 5 volte. Ogni nota può avere il suo suono: 🔔 → Suono.";
+"Choose a file…" = "Scegli un file…";
+"Choose a sound file" = "Scegli un file audio";
+"Default (%@)" = "Predefinito (%@)";
+"Every" = "Ogni";
+"From" = "Dalle";
+"Important (repeats, ignores quiet hours)" = "Importante (ripete, ignora le ore silenziose)";
+"Interface" = "Interfaccia";
+"Interface sounds (checkbox ticked, AI or translation done, note moved to Trash)" = "Suoni dell'interfaccia (casella spuntata, AI o traduzione completata, nota nel cestino)";
+"None" = "Nessuno";
+"Play" = "Ascolta";
+"Quiet hours" = "Ore silenziose";
+"Read the note title aloud" = "Leggi ad alta voce il titolo della nota";
+"Reminder: call the dentist" = "Promemoria: chiamare il dentista";
+"Reminders" = "Promemoria";
+"Ring %ld times" = "Suona %ld volte";
+"Ring once" = "Suona una volta";
+"Silence reminders" = "Silenzia promemoria";
+"Silence sounds during quiet hours" = "Silenzia i suoni nelle ore silenziose";
+"Sound" = "Suono";
+"Sounds" = "Suoni";
+"The note still appears on screen. Important reminders ring anyway." = "La nota compare comunque sullo schermo. I promemoria importanti suonano lo stesso.";
+"To" = "Alle";
+"Try" = "Prova";
+"Volume" = "Volume";

@@ -89,6 +89,7 @@ final class NotesManager {
             store.update(id) { $0.trashedAt = Date(); $0.isOpen = false; $0.modified = Date(); $0.reminder = nil }
             Reminders.shared.reschedule(id)
         }
+        if !ids.isEmpty { Sounds.ui(.trash) }
     }
 
     func restore(_ ids: [UUID]) {

@@ -22,6 +22,7 @@ The interface is in English, and in Italian when the Mac's language is Italian.
 **Organization**
 - Note list with search, archive and trash. The trash empties itself after 30 days, or after the number of days you choose.
 - Reminders 🔔: the note comes back in front of other apps and you get a notification.
+- **Sounds**: pick any system sound or your own audio file, per note too. Set the volume, repeat until you touch the note, have the title read aloud, mark reminders as Important, and set quiet hours. Optional interface sounds.
 - Sync between Macs through iCloud Drive. Notes are merged one by one and the most recent change wins.
 
 **Sharing**
@@ -86,7 +87,7 @@ English is the base language: the English text is the key. Translations live in 
 | `NotesManager.swift` | Open windows, trash |
 | `NoteWindow.swift`, `NoteTextView.swift` | Note window, editor, images |
 | `StyleViews.swift`, `ListAndSettings.swift` | Style panel, note list, settings |
-| `Reminders.swift` | Reminders and notifications |
+| `Reminders.swift`, `Sounds.swift` | Reminders, notifications and sounds |
 | `AIEngine.swift`, `AIPanels.swift` | Apple Intelligence |
 | `Translator.swift` | Apple Translate |
 | `Emailer.swift`, `WhatsApp.swift` | Sharing |

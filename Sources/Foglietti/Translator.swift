@@ -115,6 +115,7 @@ struct TranslateView: View {
             do {
                 let r = try await session.translate(run.source)
                 run.text = r.targetText
+                Sounds.ui(.done)
             } catch {
                 run.error = L("Translation failed: %@", error.localizedDescription)
             }

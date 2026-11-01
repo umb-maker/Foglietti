@@ -137,6 +137,7 @@ struct SettingsView: View {
             GeneralSettings().tabItem { Label(L("General"), systemImage: "gearshape") }
             ThemesSettings().tabItem { Label(L("Themes"), systemImage: "paintpalette") }
             AISettings().tabItem { Label("AI", systemImage: "sparkles") }
+            SoundSettings().tabItem { Label(L("Sounds"), systemImage: "speaker.wave.2") }
             ShortcutSettings().tabItem { Label(L("Shortcuts"), systemImage: "keyboard") }
             DataSettings().tabItem { Label(L("Data"), systemImage: "externaldrive") }
         }
@@ -492,6 +493,72 @@ struct AISettings: View {
                 Text(L("Actions in the note's ✨ menu"))
             } footer: {
                 Text(L("Drag to reorder. Write the instruction as you would to a person: “Rewrite as an email to the client”, “Extract only the phone numbers”…"))
+            }
+        }
+        .formStyle(.grouped)
+    }
+}
+
+// MARK: - Sounds
+
+struct SoundSettings: View {
+    @EnvironmentObject var store: NoteStore
+
+    /// Minutes after midnight as a Date, for the time pickers.
+    private func time(_ kp: WritableKeyPath<AppSettings, Int>) -> Binding<Date> {
+        Binding(
+            get: { Calendar.current.date(bySettingHour: store.settings[keyPath: kp] / 60, minute: store.settings[keyPath: kp] % 60, second: 0, of: Date()) ?? Date() },
+            set: { d in
+                let c = Calendar.current.dateComponents([.hour, .minute], from: d)
+                store.settings[keyPath: kp] = (c.hour ?? 0) * 60 + (c.minute ?? 0)
+            })
+    }
+
+    var body: some View {
+        Form {
+            Section {
+                Picker(L("Sound"), selection: $store.settings.reminderSound) {
+                    Text(L("None")).tag("")
+                    Divider()
+                    ForEach(Sounds.available, id: \.self) { Text($0).tag($0) }
+                    if store.settings.reminderSound.hasPrefix("/") {
+                        Text(Sounds.displayName(store.settings.reminderSound)).tag(store.settings.reminderSound)
+                    }
+                }
+                HStack {
+                    Button(L("Play")) { Sounds.play(store.settings.reminderSound, volume: store.settings.soundVolume) }
+                    Button(L("Choose a file…")) { if let p = Sounds.chooseFile() { store.settings.reminderSound = p } }
+                }
+                SliderRow(title: L("Volume"), value: $store.settings.soundVolume, range: 0...1, step: 0.05) { "\(Int($0 * 100))%" }
+                Stepper(store.settings.repeatCount == 1 ? L("Ring once") : L("Ring %ld times", store.settings.repeatCount),
+                        value: $store.settings.repeatCount, in: 1...10)
+                if store.settings.repeatCount > 1 {
+                    Picker(L("Every"), selection: $store.settings.repeatMinutes) {
+                        ForEach([1, 2, 5, 10], id: \.self) { Text(L("%ld min", $0)).tag($0) }
+                    }
+                }
+                HStack {
+                    Toggle(L("Read the note title aloud"), isOn: $store.settings.speakReminders)
+                    Button(L("Try")) { Sounds.speak(L("Reminder: call the dentist"), volume: store.settings.soundVolume) }
+                }
+            } header: {
+                Text(L("Reminders"))
+            } footer: {
+                Text(L("A ringing reminder stops as soon as you click or type in the note, or from the menu bar. Notes marked Important ring at least 5 times. Each note can have its own sound: 🔔 → Sound."))
+            }
+            Section {
+                Toggle(L("Silence sounds during quiet hours"), isOn: $store.settings.quietHoursEnabled)
+                if store.settings.quietHoursEnabled {
+                    DatePicker(L("From"), selection: time(\.quietFrom), displayedComponents: .hourAndMinute)
+                    DatePicker(L("To"), selection: time(\.quietTo), displayedComponents: .hourAndMinute)
+                }
+            } header: {
+                Text(L("Quiet hours"))
+            } footer: {
+                Text(L("The note still appears on screen. Important reminders ring anyway."))
+            }
+            Section(L("Interface")) {
+                Toggle(L("Interface sounds (checkbox ticked, AI or translation done, note moved to Trash)"), isOn: $store.settings.uiSounds)
             }
         }
         .formStyle(.grouped)

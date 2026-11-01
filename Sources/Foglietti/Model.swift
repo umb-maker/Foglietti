@@ -163,6 +163,8 @@ struct Note: Codable, Identifiable, Hashable {
     var collapsed = false
     var trashedAt: Date?            // in the trash since this date
     var reminder: Date?             // scheduled reminder
+    var sound: String?              // reminder sound for this note (nil = the default one)
+    var importantReminder = false   // repeats and ignores quiet hours
 
     init() {}
 
@@ -183,6 +185,8 @@ struct Note: Codable, Identifiable, Hashable {
         n.collapsed = c.v(.collapsed, n.collapsed)
         n.trashedAt = try? c.decodeIfPresent(Date.self, forKey: .trashedAt)
         n.reminder = try? c.decodeIfPresent(Date.self, forKey: .reminder)
+        n.sound = try? c.decodeIfPresent(String.self, forKey: .sound)
+        n.importantReminder = c.v(.importantReminder, n.importantReminder)
         self = n
     }
 
@@ -292,6 +296,15 @@ struct AppSettings: Codable, Equatable {
     var aiActions = AIAction.builtIns
     var aiHotKeyEnabled = true
     var translateLanguages = ["en", "it", "es", "fr", "de"]
+    var reminderSound = "Glass"
+    var soundVolume: Double = 0.8
+    var repeatCount = 1               // how many times a reminder rings
+    var repeatMinutes = 1
+    var speakReminders = false
+    var uiSounds = false
+    var quietHoursEnabled = false
+    var quietFrom = 22 * 60           // minutes after midnight
+    var quietTo = 7 * 60
 
     init() {}
 
@@ -321,6 +334,15 @@ struct AppSettings: Codable, Equatable {
         s.aiActions = c.v(.aiActions, s.aiActions)
         s.aiHotKeyEnabled = c.v(.aiHotKeyEnabled, s.aiHotKeyEnabled)
         s.translateLanguages = c.v(.translateLanguages, s.translateLanguages)
+        s.reminderSound = c.v(.reminderSound, s.reminderSound)
+        s.soundVolume = c.v(.soundVolume, s.soundVolume)
+        s.repeatCount = c.v(.repeatCount, s.repeatCount)
+        s.repeatMinutes = c.v(.repeatMinutes, s.repeatMinutes)
+        s.speakReminders = c.v(.speakReminders, s.speakReminders)
+        s.uiSounds = c.v(.uiSounds, s.uiSounds)
+        s.quietHoursEnabled = c.v(.quietHoursEnabled, s.quietHoursEnabled)
+        s.quietFrom = c.v(.quietFrom, s.quietFrom)
+        s.quietTo = c.v(.quietTo, s.quietTo)
         self = s
     }
 
