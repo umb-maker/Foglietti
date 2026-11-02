@@ -293,6 +293,8 @@ struct AppSettings: Codable, Equatable {
     var trashDays = 30
     var whatsappNumber = ""
     var emojiFavorites = "✅❗️⭐️📌💡🔥📅⏰📞✉️🛒💰🎯👍❤️😊"
+    var checkForUpdates = true
+    var skippedVersion = ""
     var aiActions = AIAction.builtIns
     var aiHotKeyEnabled = true
     var translateLanguages = ["en", "it", "es", "fr", "de"]
@@ -331,6 +333,8 @@ struct AppSettings: Codable, Equatable {
         s.trashDays = c.v(.trashDays, s.trashDays)
         s.whatsappNumber = c.v(.whatsappNumber, s.whatsappNumber)
         s.emojiFavorites = c.v(.emojiFavorites, s.emojiFavorites)
+        s.checkForUpdates = c.v(.checkForUpdates, s.checkForUpdates)
+        s.skippedVersion = c.v(.skippedVersion, s.skippedVersion)
         s.aiActions = c.v(.aiActions, s.aiActions)
         s.aiHotKeyEnabled = c.v(.aiHotKeyEnabled, s.aiHotKeyEnabled)
         s.translateLanguages = c.v(.translateLanguages, s.translateLanguages)

@@ -25,6 +25,11 @@ The interface is in English, and in Italian when the Mac's language is Italian.
 - **Sounds**: pick any system sound or your own audio file, per note too. Set the volume, repeat until you touch the note, have the title read aloud, mark reminders as Important, and set quiet hours. Optional interface sounds.
 - Sync between Macs through iCloud Drive. Notes are merged one by one and the most recent change wins.
 
+**Getting started**
+- A welcome window on first launch explains each permission (notifications, open at login, Apple Intelligence, screen recording) with a button to grant it and a live ✓ status. Nothing is asked before you choose.
+- Settings with a sidebar, like System Settings.
+- Update check: Foglietti looks at this repository's releases once a day and tells you when a new version is out (Download / Later / Skip This Version). It can be turned off.
+
 **Sharing**
 - Formatted email (⇧⌘M), WhatsApp with formatting converted (⌃⌘W), and the system Share menu.
 - Export and import of .txt, .md, .rtf and .rtfd files.
@@ -50,7 +55,7 @@ The interface is in English, and in Italian when the Mac's language is Italian.
 
 The build gets a local (ad-hoc) signature, so it runs on the Mac where you build it. To distribute it, sign it with a Developer ID and notarize it.
 
-On first launch Foglietti adds itself to your login items. You can turn this off in Settings → General.
+On first launch a welcome window lets you turn on notifications and open at login. You can reopen it from the Foglietti menu → Welcome…
 
 ## Main shortcuts
 
@@ -73,6 +78,7 @@ The full list is in Settings → Shortcuts.
 - Notes are stored in `~/Library/Application Support/Foglietti/foglietti.json`, or in iCloud Drive if you turn on sync. The file is readable JSON, and the text is stored as RTFD so it keeps formatting and images.
 - A backup copy, `foglietti.backup.json`, is made at every launch.
 - Apple Intelligence and Apple Translate run on the Mac: the text of your notes is never sent to any server.
+- The update check only reads the public release list of this repository on GitHub, once a day; it sends no data about you or your notes, and it can be turned off in Settings → About & Updates.
 
 ## Localization
 
@@ -92,6 +98,7 @@ English is the base language: the English text is the key. Translations live in 
 | `Translator.swift` | Apple Translate |
 | `Emailer.swift`, `WhatsApp.swift` | Sharing |
 | `EmojiPicker.swift`, `HotKey.swift` | Emoji, global shortcuts |
+| `Onboarding.swift`, `UpdateChecker.swift` | Welcome window, update check |
 | `Localization.swift` | `L()` helper for localized text |
 
 To try the assistant from the terminal: `.build/release/Foglietti --ask "what reminders do I have?"`

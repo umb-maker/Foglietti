@@ -131,17 +131,120 @@ struct NotesListView: View {
 
 // MARK: - Settings
 
+/// Settings with a sidebar, like System Settings.
 struct SettingsView: View {
-    var body: some View {
-        TabView {
-            GeneralSettings().tabItem { Label(L("General"), systemImage: "gearshape") }
-            ThemesSettings().tabItem { Label(L("Themes"), systemImage: "paintpalette") }
-            AISettings().tabItem { Label("AI", systemImage: "sparkles") }
-            SoundSettings().tabItem { Label(L("Sounds"), systemImage: "speaker.wave.2") }
-            ShortcutSettings().tabItem { Label(L("Shortcuts"), systemImage: "keyboard") }
-            DataSettings().tabItem { Label(L("Data"), systemImage: "externaldrive") }
+    enum Page: String, CaseIterable, Identifiable {
+        case general, themes, sounds, ai, shortcuts, data, about
+        var id: String { rawValue }
+        var title: String {
+            switch self {
+            case .general: L("General")
+            case .themes: L("Themes")
+            case .sounds: L("Sounds")
+            case .ai: L("AI & Translation")
+            case .shortcuts: L("Shortcuts")
+            case .data: L("Data & Sync")
+            case .about: L("About & Updates")
+            }
         }
-        .frame(width: 720, height: 560)
+        var symbol: String {
+            switch self {
+            case .general: "gearshape.fill"
+            case .themes: "paintpalette.fill"
+            case .sounds: "speaker.wave.2.fill"
+            case .ai: "sparkles"
+            case .shortcuts: "keyboard.fill"
+            case .data: "icloud.fill"
+            case .about: "info.circle.fill"
+            }
+        }
+        var color: Color {
+            switch self {
+            case .general: .gray
+            case .themes: .orange
+            case .sounds: .pink
+            case .ai: .purple
+            case .shortcuts: .gray
+            case .data: .blue
+            case .about: .teal
+            }
+        }
+    }
+
+    @Local private var page: Page? = .general
+
+    var body: some View {
+        HStack(spacing: 0) {
+            List(selection: $page) {
+                ForEach(Page.allCases) { p in
+                    HStack(spacing: 8) {
+                        Image(systemName: p.symbol)
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(.white)
+                            .frame(width: 22, height: 22)
+                            .background(RoundedRectangle(cornerRadius: 6).fill(p.color.gradient))
+                        Text(p.title)
+                    }
+                    .padding(.vertical, 2)
+                    .tag(Optional(p))
+                }
+            }
+            .listStyle(.sidebar)
+            .frame(width: 210)
+            Divider()
+            Group {
+                switch page ?? .general {
+                case .general: GeneralSettings()
+                case .themes: ThemesSettings()
+                case .sounds: SoundSettings()
+                case .ai: AISettings()
+                case .shortcuts: ShortcutSettings()
+                case .data: DataSettings()
+                case .about: AboutSettings()
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .frame(minWidth: 860, minHeight: 600)
+    }
+}
+
+struct AboutSettings: View {
+    @EnvironmentObject var store: NoteStore
+
+    var body: some View {
+        Form {
+            Section {
+                HStack(spacing: 16) {
+                    Image(nsImage: NSApp.applicationIconImage).resizable().frame(width: 72, height: 72)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Foglietti").font(.title2).bold()
+                        Text(L("Version %@", UpdateChecker.shared.currentVersion)).foregroundStyle(.secondary)
+                        Text(L("Customizable sticky notes for macOS.")).font(.callout).foregroundStyle(.secondary)
+                    }
+                }
+                .padding(.vertical, 4)
+            }
+            Section(L("Updates")) {
+                Toggle(L("Check for updates automatically"), isOn: $store.settings.checkForUpdates)
+                HStack {
+                    Button(L("Check Now")) { UpdateChecker.shared.check(manual: true) }
+                    if !store.settings.skippedVersion.isEmpty {
+                        Button(L("Stop skipping version %@", store.settings.skippedVersion)) { store.settings.skippedVersion = "" }
+                    }
+                }
+                Text(L("Foglietti looks at the public releases on GitHub once a day. Nothing is downloaded or installed without you."))
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            Section(L("Project")) {
+                Link(L("Source code on GitHub"), destination: URL(string: "https://github.com/\(UpdateChecker.repository)")!)
+                Link(L("Release notes"), destination: URL(string: "https://github.com/\(UpdateChecker.repository)/releases")!)
+                Button(L("Show the welcome window")) { WelcomeController.shared.show() }
+                    .buttonStyle(.link)
+                LabeledContent(L("License"), value: "MIT")
+            }
+        }
+        .formStyle(.grouped)
     }
 }
 

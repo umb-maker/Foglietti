@@ -17,7 +17,6 @@ final class Reminders: NSObject, UNUserNotificationCenterDelegate {
 
     func start() {
         center?.delegate = self
-        center?.requestAuthorization(options: [.alert, .sound]) { _, _ in }
         store.notes.forEach { reschedule($0.id) }
         timer = Timer.scheduledTimer(withTimeInterval: 15, repeats: true) { _ in
             Task { @MainActor in Reminders.shared.fireDue() }
@@ -26,6 +25,8 @@ final class Reminders: NSObject, UNUserNotificationCenterDelegate {
     }
 
     func set(_ id: UUID, at date: Date?) {
+        // permission is asked only when it's needed: the first time a reminder is set
+        if date != nil { center?.requestAuthorization(options: [.alert, .sound]) { _, _ in } }
         store.update(id) { $0.reminder = date }
         reschedule(id)
     }

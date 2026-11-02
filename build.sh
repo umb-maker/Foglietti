@@ -11,7 +11,7 @@ cp .build/release/Foglietti "$APP/Contents/MacOS/Foglietti"
 cp Resources/Info.plist "$APP/Contents/Info.plist"
 cp -R Resources/*.lproj "$APP/Contents/Resources/"
 
-if [ ! -f build/AppIcon.icns ]; then
+if [ ! -f build/AppIcon.icns ] || [ Scripts/make_icon.swift -nt build/AppIcon.icns ]; then
     ICONSET=build/AppIcon.iconset
     mkdir -p "$ICONSET"
     swift Scripts/make_icon.swift build/icon_1024.png

@@ -10,7 +10,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var listWindow: NSWindow?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        enableLaunchAtLoginOnce()
         applySettings()
         store.onSettingsChange = { [weak self] in self?.applySettings() }
         HotKey.shared.action = { NotesManager.shared.newNote() }
@@ -27,6 +26,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         NotesManager.shared.start()
         Reminders.shared.start()
         store.startWatching()
+        if WelcomeController.shared.shouldShowAtLaunch { WelcomeController.shared.show() }
+        UpdateChecker.shared.start()
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -40,15 +41,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
-
-    /// On first launch Foglietti adds itself to the login items, so it comes back after a restart.
-    /// It can be turned off in Settings → General → "Open at login" (that choice is respected).
-    private func enableLaunchAtLoginOnce() {
-        let key = "launchAtLoginConfigured"
-        guard !UserDefaults.standard.bool(forKey: key) else { return }
-        if SMAppService.mainApp.status != .enabled { try? SMAppService.mainApp.register() }
-        UserDefaults.standard.set(true, forKey: key)
-    }
 
     private func applySettings() {
         NSApp.setActivationPolicy(store.settings.showInDock ? .regular : .accessory)
@@ -66,7 +58,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     @objc func showSettings() {
         if settingsWindow == nil {
-            settingsWindow = makeWindow(title: L("Foglietti Settings"), view: SettingsView(), size: NSSize(width: 720, height: 560), resizable: false)
+            settingsWindow = makeWindow(title: L("Foglietti Settings"), view: SettingsView(), size: NSSize(width: 860, height: 600), resizable: true)
         }
         present(settingsWindow)
     }
@@ -140,6 +132,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @objc func unpinAll() { NotesManager.shared.unpinAll() }
     @objc func openList() { showList() }
     @objc func showAsk() { AskController.shared.show() }
+    @objc func showWelcome() { WelcomeController.shared.show() }
+    @objc func checkForUpdates() { UpdateChecker.shared.check(manual: true) }
     @objc func silence() { Reminders.shared.stopAllRinging() }
     @objc func openNote(_ sender: NSMenuItem) {
         if let id = sender.representedObject as? UUID { NotesManager.shared.show(id, focus: true) }
@@ -167,6 +161,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
         submenu("Foglietti", [
             item(L("About Foglietti"), #selector(NSApplication.orderFrontStandardAboutPanel(_:)), target: NSApp),
+            item(L("Welcome…"), #selector(showWelcome), target: self),
+            item(L("Check for Updates…"), #selector(checkForUpdates), target: self),
             .separator(),
             item(L("Settings…"), #selector(showSettings), ",", target: self),
             .separator(),
