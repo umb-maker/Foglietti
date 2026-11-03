@@ -11,6 +11,9 @@ final class NoteTextView: NSTextView {
 
     // MARK: Checkboxes
 
+    /// A click on a note that isn't active works right away (e.g. ticking a checkbox), without a first focusing click.
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+
     override func mouseDown(with event: NSEvent) {
         let point = convert(event.locationInWindow, from: nil)
         if let r = checkboxRange(at: point) {

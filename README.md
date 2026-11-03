@@ -4,6 +4,8 @@ Customizable sticky notes for macOS: colors, fonts, Liquid Glass, themes, remind
 
 The interface is in English, and in Italian when the Mac's language is Italian.
 
+![Foglietti in action: a new note with ⌃⌥N, checkboxes ticked with a click, and Ask Foglietti creating a note with a reminder](docs/demo.gif)
+
 ## Features
 
 **Notes**

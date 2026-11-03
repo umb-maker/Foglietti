@@ -48,7 +48,10 @@ final class NoteStore: ObservableObject {
 
     init(directory: URL? = nil) {
         let saved = UserDefaults.standard.string(forKey: Self.locationKey).map { URL(fileURLWithPath: $0, isDirectory: true) }
-        self.directory = directory ?? saved ?? Self.localDirectory
+        // --data-dir <path>: use a separate set of notes (demos, screenshots, testing)
+        let args = CommandLine.arguments
+        let override = args.firstIndex(of: "--data-dir").flatMap { $0 + 1 < args.count ? URL(fileURLWithPath: args[$0 + 1], isDirectory: true) : nil }
+        self.directory = directory ?? override ?? saved ?? Self.localDirectory
         try? FileManager.default.createDirectory(at: self.directory, withIntermediateDirectories: true)
         load()
     }
@@ -178,8 +181,10 @@ final class NoteStore: ObservableObject {
         }
         if !backedUp, FileManager.default.fileExists(atPath: fileURL.path) {
             // one copy per session (stored locally), in case something goes wrong
-            try? FileManager.default.createDirectory(at: Self.localDirectory, withIntermediateDirectories: true)
-            let backup = Self.localDirectory.appendingPathComponent("foglietti.backup.json")
+            // with iCloud the backup stays on this Mac; otherwise it sits next to the data file
+            let backupDir = usesICloud ? Self.localDirectory : directory
+            try? FileManager.default.createDirectory(at: backupDir, withIntermediateDirectories: true)
+            let backup = backupDir.appendingPathComponent("foglietti.backup.json")
             try? FileManager.default.removeItem(at: backup)
             try? FileManager.default.copyItem(at: fileURL, to: backup)
             backedUp = true
