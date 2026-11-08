@@ -10,7 +10,10 @@ final class NoteWindow: NSWindow {
     override func performClose(_ sender: Any?) { noteController?.closeNote() }
     override func sendEvent(_ event: NSEvent) {
         // touching a ringing note silences it
-        if [.leftMouseDown, .keyDown].contains(event.type), let id = noteController?.noteID { Reminders.shared.stopRinging(id) }
+        if [.leftMouseDown, .keyDown].contains(event.type), let id = noteController?.noteID {
+            Reminders.shared.stopRinging(id)
+            Vault.shared.touch()
+        }
         super.sendEvent(event)
     }
 }
@@ -194,9 +197,84 @@ final class NoteWindowController: NSWindowController, NSWindowDelegate, NSTextVi
         win.noteController = self
         win.delegate = self
         buildViews()
-        textView.textStorage?.setAttributedString(note.attributed)
+        loadText(note)
         apply(note)
+        NotificationCenter.default.addObserver(self, selector: #selector(vaultChanged), name: Vault.changed, object: nil)
+    }
+
+    // MARK: Protected notes
+
+    private var lockOverlay: LockedOverlayView?
+    private var showingLocked = false
+    /// Last text saved encrypted: avoids re-encrypting (and re-syncing) unchanged text.
+    private var lastSealed: NSAttributedString?
+
+    /// Puts the note's text in the editor: decrypted if protected and the vault is open, otherwise the lock screen.
+    private func loadText(_ note: Note) {
+        guard let ts = textView.textStorage else { return }
+        if note.isProtected {
+            if let p = try? note.decryptedPayload() {
+                var tmp = Note()
+                tmp.style = note.style
+                tmp.content = p.content
+                tmp.plainText = p.plainText
+                ts.setAttributedString(tmp.attributed)
+                lastSealed = NSAttributedString(attributedString: ts)
+                setLockedView(false, style: note.style)
+            } else {
+                ts.setAttributedString(NSAttributedString())
+                lastSealed = nil
+                setLockedView(true, style: note.style)
+            }
+        } else {
+            ts.setAttributedString(note.attributed)
+            lastSealed = nil
+            setLockedView(false, style: note.style)
+        }
         textView.fitImages()
+    }
+
+    private func setLockedView(_ locked: Bool, style: NoteStyle) {
+        showingLocked = locked
+        textView.isEditable = !locked
+        container.scroll.isHidden = locked || (applied?.collapsed ?? false)
+        if locked {
+            let v = lockOverlay ?? LockedOverlayView()
+            v.frame = container.scroll.frame
+            v.autoresizingMask = [.width, .height]
+            v.tint = style.text.ns
+            v.isHidden = applied?.collapsed ?? false
+            if v.superview == nil { container.addSubview(v, positioned: .below, relativeTo: container.header) }
+            lockOverlay = v
+        } else {
+            lockOverlay?.removeFromSuperview()
+            lockOverlay = nil
+        }
+    }
+
+    @objc private func vaultChanged() {
+        guard let n = store.note(noteID), n.isProtected else { return }
+        if Vault.shared.isUnlocked == showingLocked { loadText(n) }
+    }
+
+    /// Readable copy of the note for sending or exporting; nil (with a beep) while it is locked.
+    private func readableNote() -> Note? {
+        guard let n = store.note(noteID) else { return nil }
+        guard let r = n.readable else { NSSound.beep(); return nil }
+        return r
+    }
+
+    @objc func toggleProtection() {
+        Task { @MainActor in
+            flush()
+            guard let n = store.note(noteID) else { return }
+            if !n.isProtected, !Vault.shared.isSetUp { guard Vault.shared.runSetup() else { return } }
+            guard await Vault.shared.ensureUnlocked() else { return }
+            store.update(noteID) { n in
+                if n.isProtected { try? n.removeProtection() } else { try? n.protect() }
+                n.modified = Date()
+            }
+        }
     }
     required init?(coder: NSCoder) { fatalError() }
 
@@ -245,7 +323,10 @@ final class NoteWindowController: NSWindowController, NSWindowDelegate, NSTextVi
 
         // content changed elsewhere (e.g. sync from another Mac): reload the text
         var reloaded = false
-        if let old, old.content != note.content, let ts = textView.textStorage {
+        if let old, old.isProtected != note.isProtected || (note.isProtected && old.cipher != note.cipher) {
+            loadText(note)          // protection turned on/off, or encrypted text changed on another Mac
+            reloaded = true
+        } else if let old, !note.isProtected, old.content != note.content, let ts = textView.textStorage {
             let sel = textView.selectedRange()
             ts.setAttributedString(note.attributed)
             textView.fitImages()
@@ -344,7 +425,8 @@ final class NoteWindowController: NSWindowController, NSWindowDelegate, NSTextVi
         let h = collapsed ? CGFloat(applied?.style.headerHeight ?? 24) : frame.height
         win.minSize = NSSize(width: 140, height: collapsed ? h : 60)
         win.setFrame(NSRect(x: win.frame.minX, y: top - h, width: win.frame.width, height: h), display: true, animate: true)
-        container.scroll.isHidden = collapsed
+        container.scroll.isHidden = collapsed || showingLocked
+        lockOverlay?.isHidden = collapsed
     }
 
     func show(focus: Bool) {
@@ -360,6 +442,7 @@ final class NoteWindowController: NSWindowController, NSWindowDelegate, NSTextVi
     // MARK: Saving text
 
     func textDidChange(_ notification: Notification) {
+        Vault.shared.touch()
         saveTask?.cancel()
         saveTask = Task { @MainActor [weak self] in
             try? await Task.sleep(nanoseconds: 300_000_000)
@@ -373,6 +456,17 @@ final class NoteWindowController: NSWindowController, NSWindowDelegate, NSTextVi
         saveTask = nil
         guard let ts = textView.textStorage else { return }
         let copy = NSAttributedString(attributedString: ts)
+        if store.note(noteID)?.isProtected == true {
+            // protected: never written in clear; skipped while locked or unchanged
+            guard !showingLocked, Vault.shared.isUnlocked, lastSealed.map({ !$0.isEqual(to: copy) }) ?? true else { return }
+            store.update(noteID) { n in
+                try? n.setProtectedText(copy)
+                n.modified = Date()
+            }
+            lastSealed = copy
+            applied = store.note(noteID) ?? applied
+            return
+        }
         store.update(noteID) { n in
             guard n.plainText != copy.string || n.attributed != copy else { return }
             n.setText(copy)
@@ -698,6 +792,8 @@ final class NoteWindowController: NSWindowController, NSWindowDelegate, NSTextVi
         item(L("Share…"), #selector(shareNote(_:)), "square.and.arrow.up")
         item(L("Export as text…"), #selector(exportText), "doc.text")
         m.addItem(.separator())
+        item(applied?.isProtected == true ? L("Remove protection") : L("Protect note…"), #selector(toggleProtection),
+             applied?.isProtected == true ? "lock.open" : "lock")
         item(L("Archive note"), #selector(archive), "archivebox")
         item(L("Move to Trash"), #selector(deleteNote), "trash")
         m.addItem(.separator())
@@ -816,7 +912,7 @@ final class NoteWindowController: NSWindowController, NSWindowDelegate, NSTextVi
 
     @objc func exportText() {
         flush()
-        guard let n = store.note(noteID) else { return }
+        guard let n = readableNote() else { return }
         let panel = NSSavePanel()
         panel.nameFieldStringValue = n.title.replacingOccurrences(of: "/", with: "-") + ".rtfd"
         panel.allowedContentTypes = [.rtfd, .rtf, .plainText]
@@ -837,17 +933,17 @@ final class NoteWindowController: NSWindowController, NSWindowDelegate, NSTextVi
 
     @objc func sendEmail(_ sender: Any?) {
         flush()
-        if let n = store.note(noteID) { Emailer.send(n, settings: store.settings) }
+        if let n = readableNote() { Emailer.send(n, settings: store.settings) }
     }
 
     @objc func sendWhatsApp(_ sender: Any?) {
         flush()
-        if let n = store.note(noteID) { WhatsApp.send(n, settings: store.settings) }
+        if let n = readableNote() { WhatsApp.send(n, settings: store.settings) }
     }
 
     @objc func shareNote(_ sender: Any?) {
         flush()
-        guard let n = store.note(noteID) else { return }
+        guard let n = readableNote() else { return }
         let picker = NSSharingServicePicker(items: [n.attributed])
         let anchor = container.header.trailing.first { $0.action == #selector(showMore(_:)) } ?? paletteButton!
         picker.show(relativeTo: anchor.bounds, of: anchor, preferredEdge: .minY)
@@ -864,4 +960,37 @@ extension NSAlert {
         NSApp.activate(ignoringOtherApps: true)
         a.runModal()
     }
+}
+
+/// Shown instead of the text while a protected note is locked.
+final class LockedOverlayView: NSView {
+    var tint: NSColor = .labelColor { didSet { apply() } }
+    private let icon = NSImageView()
+    private let label = NSTextField(labelWithString: L("Protected note"))
+    private let button = NSButton(title: L("Unlock"), target: nil, action: nil)
+
+    override init(frame: NSRect) {
+        super.init(frame: frame)
+        icon.image = NSImage(systemSymbolName: "lock.fill", accessibilityDescription: nil)
+        icon.symbolConfiguration = .init(pointSize: 26, weight: .medium)
+        label.font = .systemFont(ofSize: 13, weight: .semibold)
+        button.bezelStyle = .rounded
+        button.target = self
+        button.action = #selector(unlock)
+        let stack = NSStackView(views: [icon, label, button])
+        stack.orientation = .vertical
+        stack.spacing = 8
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(stack)
+        NSLayoutConstraint.activate([stack.centerXAnchor.constraint(equalTo: centerXAnchor), stack.centerYAnchor.constraint(equalTo: centerYAnchor)])
+        apply()
+    }
+    required init?(coder: NSCoder) { fatalError() }
+
+    private func apply() {
+        icon.contentTintColor = tint.withAlphaComponent(0.6)
+        label.textColor = tint.withAlphaComponent(0.75)
+    }
+
+    @objc private func unlock() { Task { @MainActor in _ = await Vault.shared.ensureUnlocked() } }
 }

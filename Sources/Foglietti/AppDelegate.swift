@@ -26,6 +26,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         if store.notes.isEmpty { createWelcomeNote() }
         NotesManager.shared.start()
         Reminders.shared.start()
+        Vault.shared.start()
         store.startWatching()
         if WelcomeController.shared.shouldShowAtLaunch { WelcomeController.shared.show() }
         UpdateChecker.shared.start()
@@ -108,6 +109,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         add(L("New note"), #selector(newNote), symbol: "plus")
         menu.addItem(.separator())
         add(L("Show all"), #selector(showAll), symbol: "eye")
+        if Vault.shared.isUnlocked { add(L("Lock Protected Notes"), #selector(lockVault), symbol: "lock.fill") }
         add(L("Hide all"), #selector(hideAll), symbol: "eye.slash")
         if store.notes.contains(where: { $0.floating && $0.isOpen }) {
             add(L("Unpin all"), #selector(unpinAll), symbol: "pin.slash")
@@ -148,6 +150,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @objc func unpinAll() { NotesManager.shared.unpinAll() }
     @objc func openList() { showList() }
     @objc func showAsk() { AskController.shared.show() }
+    @objc func lockVault() { Vault.shared.lock() }
     @objc func showWelcome() { WelcomeController.shared.show() }
     @objc func checkForUpdates() { UpdateChecker.shared.check(manual: true) }
     @objc func silence() { Reminders.shared.stopAllRinging() }
@@ -192,6 +195,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             item(L("Hide all"), #selector(hideAll), target: self),
             .separator(),
             item(L("Move note to Trash"), #selector(NoteWindowController.deleteNote)),
+            item(L("Protect / Unprotect Note"), #selector(NoteWindowController.toggleProtection)),
+            item(L("Lock Protected Notes"), #selector(lockVault), "l", [.command, .control], target: self),
             item(L("Send note by email…"), #selector(NoteWindowController.sendEmail(_:)), "m", [.command, .shift]),
             item(L("Send note via WhatsApp"), #selector(NoteWindowController.sendWhatsApp(_:)), "w", [.command, .control]),
             item(L("Share note…"), #selector(NoteWindowController.shareNote(_:))),

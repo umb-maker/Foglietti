@@ -165,6 +165,7 @@ struct Note: Codable, Identifiable, Hashable {
     var reminder: Date?             // scheduled reminder
     var sound: String?              // reminder sound for this note (nil = the default one)
     var importantReminder = false   // repeats and ignores quiet hours
+    var cipher: Data?               // protected note: encrypted content (content and plainText stay empty)
 
     init() {}
 
@@ -187,6 +188,7 @@ struct Note: Codable, Identifiable, Hashable {
         n.reminder = try? c.decodeIfPresent(Date.self, forKey: .reminder)
         n.sound = try? c.decodeIfPresent(String.self, forKey: .sound)
         n.importantReminder = c.v(.importantReminder, n.importantReminder)
+        n.cipher = try? c.decodeIfPresent(Data.self, forKey: .cipher)
         self = n
     }
 
@@ -195,6 +197,7 @@ struct Note: Codable, Identifiable, Hashable {
     var isActive: Bool { !archived && trashedAt == nil }
 
     var title: String {
+        if cipher != nil { return "🔒 " + L("Protected note") }
         let line = plainText.split(whereSeparator: \.isNewline).first.map(String.init)?
             .trimmingCharacters(in: .whitespaces) ?? ""
         return line.isEmpty ? L("Empty note") : String(line.prefix(80))
@@ -293,6 +296,8 @@ struct AppSettings: Codable, Equatable {
     var askHotKeyControl = true
     var askHotKeyOption = true
     var askHotKeyShift = false
+    var vaultAutoLockMinutes = 5      // 0 = only on sleep / screen lock
+    var vaultTouchID = true
     var emailRecipient = ""
     var emailFormatted = true
     var trashDays = 30
@@ -338,6 +343,8 @@ struct AppSettings: Codable, Equatable {
         s.askHotKeyControl = c.v(.askHotKeyControl, s.askHotKeyControl)
         s.askHotKeyOption = c.v(.askHotKeyOption, s.askHotKeyOption)
         s.askHotKeyShift = c.v(.askHotKeyShift, s.askHotKeyShift)
+        s.vaultAutoLockMinutes = c.v(.vaultAutoLockMinutes, s.vaultAutoLockMinutes)
+        s.vaultTouchID = c.v(.vaultTouchID, s.vaultTouchID)
         s.emailRecipient = c.v(.emailRecipient, s.emailRecipient)
         s.emailFormatted = c.v(.emailFormatted, s.emailFormatted)
         s.trashDays = c.v(.trashDays, s.trashDays)

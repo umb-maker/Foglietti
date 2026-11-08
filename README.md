@@ -23,6 +23,7 @@ The interface is in English, and in Italian when the Mac's language is Italian.
 
 **Organization**
 - Note list with search, archive and trash. The trash empties itself after 30 days, or after the number of days you choose.
+- **Protected notes** 🔒: encrypt a note with a master password (AES-256-GCM, key derived with PBKDF2) and unlock it with Touch ID. Locked notes show only a lock; they lock again after a few idle minutes, on sleep and when the screen locks, and they are left out of search, Ask Foglietti, sharing and export while locked.
 - Reminders 🔔: the note comes back in front of other apps and you get a notification.
 - **Sounds**: pick any system sound or your own audio file, per note too. Set the volume, repeat until you touch the note, have the title read aloud, mark reminders as Important, and set quiet hours. Optional interface sounds.
 - Sync between Macs through iCloud Drive. Notes are merged one by one and the most recent change wins.
@@ -80,6 +81,7 @@ The full list is in Settings → Shortcuts.
 ## Data and privacy
 
 - Notes are stored in `~/Library/Application Support/Foglietti/foglietti.json`, or in iCloud Drive if you turn on sync. The file is readable JSON, and the text is stored as RTFD so it keeps formatting and images.
+- Protected notes are stored only encrypted, in the data file, in backups and in iCloud Drive. The master password is never saved; with Touch ID on, the derived key is kept in your login keychain. If you forget the master password, protected notes can't be recovered.
 - A backup copy, `foglietti.backup.json`, is made at every launch.
 - Apple Intelligence and Apple Translate run on the Mac: the text of your notes is never sent to any server.
 - The update check only reads the public release list of this repository on GitHub, once a day; it sends no data about you or your notes, and it can be turned off in Settings → About & Updates.
@@ -103,6 +105,7 @@ English is the base language: the English text is the key. Translations live in 
 | `Emailer.swift`, `WhatsApp.swift` | Sharing |
 | `EmojiPicker.swift`, `HotKey.swift` | Emoji, global shortcuts |
 | `Onboarding.swift`, `UpdateChecker.swift` | Welcome window, update check |
+| `Vault.swift` | Protected notes: master password, encryption, Touch ID, auto-lock |
 | `Localization.swift` | `L()` helper for localized text |
 
 To try the assistant from the terminal: `.build/release/Foglietti --ask "what reminders do I have?"`

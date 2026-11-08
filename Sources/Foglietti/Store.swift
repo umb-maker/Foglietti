@@ -10,6 +10,8 @@ final class NoteStore: ObservableObject {
 
     @Published var notes: [Note] = [] { didSet { changed(notesChanged: true) } }
     @Published var themes: [Theme] = [] { didSet { changed() } }
+    /// Master-password check data for protected notes (no key inside).
+    @Published var vault: VaultInfo? { didSet { changed() } }
     @Published var settings = AppSettings() { didSet { if settings != oldValue { changed(); onSettingsChange?() } } }
     /// Permanently deleted notes: needed so another Mac doesn't bring them back.
     private var tombstones: [UUID: Date] = [:]
@@ -44,6 +46,7 @@ final class NoteStore: ObservableObject {
         var themes: [Theme]
         var settings: AppSettings
         var tombstones: [UUID: Date]? = nil
+        var vault: VaultInfo? = nil
     }
 
     init(directory: URL? = nil) {
@@ -87,7 +90,7 @@ final class NoteStore: ObservableObject {
         loading = true
         defer { loading = false }
         if let p = readDisk() {
-            notes = p.notes; themes = p.themes; settings = p.settings; tombstones = p.tombstones ?? [:]
+            notes = p.notes; themes = p.themes; settings = p.settings; tombstones = p.tombstones ?? [:]; vault = p.vault
         }
         if themes.isEmpty { themes = Theme.builtIns }
         // built-in themes added by an update: append them only once
@@ -139,6 +142,8 @@ final class NoteStore: ObservableObject {
         let mergedThemes = themes.map { themeByID[$0.id]! } + remote.themes.filter { t in !themes.contains { $0.id == t.id } }
         if mergedThemes != themes { themes = mergedThemes }
         if remote.settings != settings { settings = remote.settings }
+        // the most recent vault wins (e.g. master password changed on another Mac)
+        if let rv = remote.vault, vault == nil || rv.updated > vault!.updated { vault = rv }
         lastSync = Date()
         saveNow(skipMerge: true)   // writes only if the merge differs from what is on disk
     }
@@ -173,7 +178,7 @@ final class NoteStore: ObservableObject {
         enc.outputFormatting = [.prettyPrinted, .sortedKeys]
         enc.dateEncodingStrategy = .iso8601
         guard let data = try? enc.encode(Persisted(notes: notes, themes: themes, settings: settings,
-                                                  tombstones: tombstones.isEmpty ? nil : tombstones)) else { return }
+                                                  tombstones: tombstones.isEmpty ? nil : tombstones, vault: vault)) else { return }
         if data == lastWritten || data == (try? Data(contentsOf: fileURL)) {
             lastWritten = data
             knownModDate = modDate()

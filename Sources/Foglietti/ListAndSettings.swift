@@ -2,6 +2,7 @@ import SwiftUI
 import AppKit
 import ServiceManagement
 import UniformTypeIdentifiers
+import Combine
 
 // MARK: - Note list
 
@@ -114,11 +115,11 @@ struct NotesListView: View {
             }
             Button(L("Send by email…")) {
                 manager.controllers[n.id]?.flush()
-                if let note = store.note(n.id) { Emailer.send(note, settings: store.settings) }
+                if let note = store.note(n.id)?.readable { Emailer.send(note, settings: store.settings) } else { NSSound.beep() }
             }
             Button(L("Send via WhatsApp")) {
                 manager.controllers[n.id]?.flush()
-                if let note = store.note(n.id) { WhatsApp.send(note, settings: store.settings) }
+                if let note = store.note(n.id)?.readable { WhatsApp.send(note, settings: store.settings) } else { NSSound.beep() }
             }
             Menu(L("Theme")) {
                 ForEach(store.themes) { t in Button(t.name) { store.update(n.id) { $0.style = t.style } } }
@@ -134,7 +135,7 @@ struct NotesListView: View {
 /// Settings with a sidebar, like System Settings.
 struct SettingsView: View {
     enum Page: String, CaseIterable, Identifiable {
-        case general, themes, sounds, ai, shortcuts, data, about
+        case general, themes, sounds, ai, shortcuts, protected, data, about
         var id: String { rawValue }
         var title: String {
             switch self {
@@ -144,6 +145,7 @@ struct SettingsView: View {
             case .ai: L("AI & Translation")
             case .shortcuts: L("Shortcuts")
             case .data: L("Data & Sync")
+            case .protected: L("Protected Notes")
             case .about: L("About & Updates")
             }
         }
@@ -155,6 +157,7 @@ struct SettingsView: View {
             case .ai: "sparkles"
             case .shortcuts: "keyboard.fill"
             case .data: "icloud.fill"
+            case .protected: "lock.fill"
             case .about: "info.circle.fill"
             }
         }
@@ -166,6 +169,7 @@ struct SettingsView: View {
             case .ai: .purple
             case .shortcuts: .gray
             case .data: .blue
+            case .protected: .indigo
             case .about: .teal
             }
         }
@@ -200,6 +204,7 @@ struct SettingsView: View {
                 case .ai: AISettings()
                 case .shortcuts: ShortcutSettings()
                 case .data: DataSettings()
+                case .protected: ProtectedSettings()
                 case .about: AboutSettings()
                 }
             }
@@ -522,7 +527,11 @@ struct DataSettings: View {
         guard p.runModal() == .OK, let dir = p.url else { return }
         NotesManager.shared.flushAll()
         var used = Set<String>()
-        for n in store.notes {
+        var exported = 0, skipped = 0
+        for original in store.notes {
+            // protected notes are exported only while unlocked, never as encrypted noise
+            guard let n = original.readable else { skipped += 1; continue }
+            exported += 1
             var name = n.title.replacingOccurrences(of: "/", with: "-").replacingOccurrences(of: ":", with: "-")
             while used.contains(name) { name += " bis" }
             used.insert(name)
@@ -532,7 +541,8 @@ struct DataSettings: View {
                 .write(to: dir.appendingPathComponent(name + ".rtfd"), options: .atomic, originalContentsURL: nil)
             try? n.plainText.write(to: dir.appendingPathComponent(name + ".txt"), atomically: true, encoding: .utf8)
         }
-        message = L("Exported %ld notes to %@.", store.notes.count, dir.lastPathComponent)
+        message = L("Exported %ld notes to %@.", exported, dir.lastPathComponent)
+            + (skipped > 0 ? " " + L("%ld protected notes were skipped: unlock them to include them.", skipped) : "")
     }
 }
 
@@ -701,6 +711,95 @@ struct HotKeyEditor: View {
         if enabled && !(control || option || shift || command) {
             Text(L("Add at least one modifier key (⌃ ⌥ ⇧ ⌘)."))
                 .font(.caption).foregroundStyle(.orange)
+        }
+    }
+}
+
+// MARK: - Protected notes
+
+struct ProtectedSettings: View {
+    @EnvironmentObject var store: NoteStore
+    @Local private var unlocked = Vault.shared.isUnlocked
+    @Local private var message: String?
+    private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+
+    var body: some View {
+        Form {
+            Section {
+                if store.vault == nil {
+                    Label(L("No master password yet. It is created the first time you protect a note."), systemImage: "lock.open")
+                    Button(L("Create Master Password…")) { _ = Vault.shared.runSetup() }
+                } else {
+                    Label(unlocked ? L("Unlocked") : L("Locked"), systemImage: unlocked ? "lock.open.fill" : "lock.fill")
+                        .foregroundStyle(unlocked ? .orange : .green)
+                    HStack {
+                        if unlocked {
+                            Button(L("Lock Now")) { Vault.shared.lock() }
+                        } else {
+                            Button(L("Unlock…")) { Task { @MainActor in _ = await Vault.shared.ensureUnlocked() } }
+                        }
+                        Button(L("Change Master Password…"), action: changePassword)
+                    }
+                }
+                if let message { Text(message).font(.caption).foregroundStyle(.secondary) }
+            } header: {
+                Text(L("Master password"))
+            } footer: {
+                Text(L("Protected notes are encrypted (AES-256) with a key made from your master password. If you forget it, they can't be recovered."))
+            }
+            Section(L("Unlocking")) {
+                Toggle(L("Unlock with Touch ID"), isOn: Binding(get: { store.settings.vaultTouchID }, set: setTouchID))
+                    .disabled(!Vault.touchIDAvailable || store.vault == nil)
+                Picker(L("Lock again after"), selection: $store.settings.vaultAutoLockMinutes) {
+                    ForEach([1, 5, 15, 60], id: \.self) { Text(L("%ld min of inactivity", $0)).tag($0) }
+                    Text(L("Only on sleep or screen lock")).tag(0)
+                }
+                Text(L("Protected notes also lock when the Mac sleeps or the screen locks."))
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+        }
+        .formStyle(.grouped)
+        .onReceive(timer) { _ in unlocked = Vault.shared.isUnlocked }
+    }
+
+    private func setTouchID(_ on: Bool) {
+        store.settings.vaultTouchID = on
+        if !on { Vault.shared.deleteKeyFromKeychain(); return }
+        Task { @MainActor in
+            // the key can be stored only while unlocked
+            if await Vault.shared.ensureUnlocked() { Vault.shared.saveKeyInKeychain() }
+        }
+    }
+
+    private func changePassword() {
+        let old = NSSecureTextField(frame: NSRect(x: 0, y: 0, width: 280, height: 24))
+        let p1 = NSSecureTextField(frame: NSRect(x: 0, y: 0, width: 280, height: 24))
+        let p2 = NSSecureTextField(frame: NSRect(x: 0, y: 0, width: 280, height: 24))
+        old.placeholderString = L("Current password")
+        p1.placeholderString = L("New password")
+        p2.placeholderString = L("Repeat the new password")
+        let stack = NSStackView(views: [old, p1, p2])
+        stack.orientation = .vertical
+        stack.spacing = 8
+        stack.frame = NSRect(x: 0, y: 0, width: 280, height: 88)
+        let a = NSAlert()
+        a.messageText = L("Change master password")
+        a.informativeText = L("Every protected note is encrypted again with the new password.")
+        a.accessoryView = stack
+        a.addButton(withTitle: L("Change"))
+        a.addButton(withTitle: L("Cancel"))
+        a.window.initialFirstResponder = old
+        while a.runModal() == .alertFirstButtonReturn {
+            if p1.stringValue.count < 6 { a.informativeText = L("Use at least 6 characters."); continue }
+            if p1.stringValue != p2.stringValue { a.informativeText = L("The two passwords don't match."); continue }
+            do {
+                try Vault.shared.changePassword(old: old.stringValue, new: p1.stringValue)
+                message = L("Master password changed.")
+                return
+            } catch {
+                a.informativeText = error.localizedDescription
+                old.stringValue = ""
+            }
         }
     }
 }
