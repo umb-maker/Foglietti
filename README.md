@@ -55,6 +55,8 @@ The interface is in English, and in Italian when the Mac's language is Italian.
 ./build.sh install    # also copies it to /Applications
 ```
 
+With Xcode installed, the build also compiles the layered macOS 26 icon in `Resources/AppIcon.icon` (dark, clear and tinted variants, editable in Icon Composer); with only the Command Line Tools it draws a classic icon with `Scripts/make_icon.swift`.
+
 The build gets a local (ad-hoc) signature, so it runs on the Mac where you build it. To distribute it, sign it with a Developer ID and notarize it.
 
 On first launch a welcome window lets you turn on notifications and open at login. You can reopen it from the Foglietti menu → Welcome…

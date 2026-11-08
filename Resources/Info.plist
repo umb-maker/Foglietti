@@ -10,6 +10,8 @@
 	<string>Foglietti</string>
 	<key>CFBundleIconFile</key>
 	<string>AppIcon</string>
+	<key>CFBundleIconName</key>
+	<string>AppIcon</string>
 	<key>CFBundleIdentifier</key>
 	<string>com.umbertocaputo.foglietti</string>
 	<key>CFBundleLocalizations</key>

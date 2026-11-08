@@ -2,8 +2,11 @@ import AppKit
 
 // Draws the app icon at 1024×1024: two sticky notes on a blue rounded square,
 // the front one with a folded corner and a small checklist.
-// Usage: swift Scripts/make_icon.swift out.png
+// Usage: swift Scripts/make_icon.swift out.png [full|back|front]
+//   full  = complete icon (for .icns on older macOS)
+//   back / front = a single note on a transparent canvas, as a layer for the macOS 26 .icon
 let out = CommandLine.arguments[1]
+let mode = CommandLine.arguments.count > 2 ? CommandLine.arguments[2] : "full"
 let S: CGFloat = 1024
 
 func rgb(_ hex: UInt32, _ a: CGFloat = 1) -> NSColor {
@@ -38,6 +41,7 @@ func withTransform(dx: CGFloat, dy: CGFloat, degrees: CGFloat, _ draw: () -> Voi
 }
 
 func shadow(_ blur: CGFloat, _ dy: CGFloat, _ alpha: CGFloat) {
+    guard mode == "full" else { return }   // in .icon layers the system draws the shadows
     let s = NSShadow()
     s.shadowBlurRadius = blur
     s.shadowOffset = NSSize(width: 0, height: dy)
@@ -46,6 +50,14 @@ func shadow(_ blur: CGFloat, _ dy: CGFloat, _ alpha: CGFloat) {
 }
 
 let img = NSImage(size: NSSize(width: S, height: S), flipped: false) { _ in
+    if mode != "full" {
+        // .icon layers use the whole canvas as the rounded square: map the 824 px square onto 1024
+        let t = NSAffineTransform()
+        t.scale(by: S / 824)
+        t.translateX(by: -100, yBy: -100)
+        t.concat()
+    }
+    if mode == "full" {
     // Background: macOS icon grid (824 px rounded square, 100 px margin)
     let bgRect = NSRect(x: 100, y: 100, width: 824, height: 824)
     NSGraphicsContext.saveGraphicsState()
@@ -62,8 +74,10 @@ let img = NSImage(size: NSSize(width: S, height: S), flipped: false) { _ in
     NSGradient(starting: NSColor.white.withAlphaComponent(0.22), ending: NSColor.white.withAlphaComponent(0))!
         .draw(in: NSRect(x: 100, y: 512, width: 824, height: 412), angle: -90)
     NSGraphicsContext.restoreGraphicsState()
+    }
 
     // Back note: mint, tilted left
+    if mode == "full" || mode == "back" {
     withTransform(dx: 470, dy: 540, degrees: 9) {
         let p = notePath(width: 470, height: 470, radius: 34, fold: 0)
         NSGraphicsContext.saveGraphicsState()
@@ -73,7 +87,10 @@ let img = NSImage(size: NSSize(width: S, height: S), flipped: false) { _ in
         NSGradient(starting: rgb(0xB9F0D4), ending: rgb(0x86D9B0))!.draw(in: p, angle: -90)
     }
 
+    }
+
     // Front note: yellow, tilted right, folded corner
+    if mode == "full" || mode == "front" {
     withTransform(dx: 548, dy: 470, degrees: -5) {
         let w: CGFloat = 500, h: CGFloat = 500, fold: CGFloat = 112
         let p = notePath(width: w, height: h, radius: 36, fold: fold)
@@ -126,6 +143,7 @@ let img = NSImage(size: NSSize(width: S, height: S), flipped: false) { _ in
                 NSBezierPath(roundedRect: NSRect(x: x0, y: y - 13, width: len + 82, height: 26), xRadius: 13, yRadius: 13).fill()
             }
         }
+    }
     }
     return true
 }
