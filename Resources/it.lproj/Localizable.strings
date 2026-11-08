@@ -24,7 +24,6 @@
 "Archive note" = "Archivia";
 "Ask Foglietti (from any app)" = "Chiedi a Foglietti (da qualsiasi app)";
 "Ask Foglietti…" = "Chiedi a Foglietti…";
-"Ask Foglietti…  (⌃⌥Space)" = "Chiedi a Foglietti…  (⌃⌥Spazio)";
 "Ask before deleting permanently" = "Chiedi conferma prima di eliminare definitivamente";
 "Ask, or ask me to do something…" = "Chiedi o chiedi di fare qualcosa…";
 "Background" = "Sfondo";
@@ -312,7 +311,6 @@
 "You can always set one by hand with the 🔔 bell." = "Puoi sempre impostarlo a mano dalla campanella 🔔.";
 "You have no upcoming reminders." = "Non hai promemoria in programma.";
 "You won't be able to recover them." = "Non potrai più recuperarle.";
-"\"Ask Foglietti\" from any app with ⌃⌥Space" = "\"Chiedi a Foglietti\" da qualsiasi app con ⌃⌥Spazio";
 "double-click" = "doppio clic";
 "double-click the bar" = "doppio clic sulla barra";
 "e.g. +1 555 123 4567" = "es. +39 333 1234567";
@@ -401,3 +399,11 @@
 "customize a note: colors, fonts, Liquid Glass" = "personalizza una nota: colori, font, Liquid Glass";
 "everything else is in the menu bar icon" = "tutto il resto è nell'icona della barra dei menu";
 "new note, from any app" = "nuova nota, da qualsiasi app";
+
+/* 1.3: scorciatoia di Chiedi a Foglietti */
+"Add at least one modifier key (⌃ ⌥ ⇧ ⌘)." = "Aggiungi almeno un tasto modificatore (⌃ ⌥ ⇧ ⌘).";
+"Ask Foglietti from any app" = "Chiedi a Foglietti da qualsiasi app";
+"If nothing happens when you press it, another app (a launcher, a taskbar…) is using the same combination: pick another one, e.g. ⌃⌥A." = "Se premendola non succede nulla, un'altra app (un launcher, una barra…) usa la stessa combinazione: scegline un'altra, per esempio ⌃⌥A.";
+"It's the same combination as New note: choose a different one." = "È la stessa combinazione di Nuova nota: scegline un'altra.";
+"Space" = "Spazio";
+"\"Ask Foglietti\" from any app with %@" = "\"Chiedi a Foglietti\" da qualsiasi app con %@";

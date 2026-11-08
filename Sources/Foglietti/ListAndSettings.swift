@@ -186,7 +186,7 @@ struct SettingsView: View {
                         Text(p.title)
                     }
                     .padding(.vertical, 2)
-                    .tag(Optional(p))
+                    .tag(p)
                 }
             }
             .listStyle(.sidebar)
@@ -411,24 +411,29 @@ struct ShortcutSettings: View {
     var body: some View {
         Form {
             Section(L("New note from any app")) {
-                Toggle(L("Enable global shortcut"), isOn: $store.settings.hotKeyEnabled)
-                HStack(spacing: 16) {
-                    Toggle(L("⌃ Control"), isOn: $store.settings.hotKeyControl)
-                    Toggle(L("⌥ Option"), isOn: $store.settings.hotKeyOption)
-                    Toggle(L("⇧ Shift"), isOn: $store.settings.hotKeyShift)
-                    Toggle(L("⌘ Command"), isOn: $store.settings.hotKeyCommand)
-                }
-                .disabled(!store.settings.hotKeyEnabled)
-                Picker(L("Key"), selection: $store.settings.hotKeyKey) {
-                    ForEach(keys, id: \.self) { Text($0).tag($0) }
-                }
-                .disabled(!store.settings.hotKeyEnabled)
-                LabeledContent(L("Current shortcut"), value: store.settings.hotKeyLabel)
+                HotKeyEditor(enabled: $store.settings.hotKeyEnabled, key: $store.settings.hotKeyKey,
+                             control: $store.settings.hotKeyControl, option: $store.settings.hotKeyOption,
+                             shift: $store.settings.hotKeyShift, command: $store.settings.hotKeyCommand,
+                             label: store.settings.hotKeyLabel)
                 if HotKey.shared.lastError != nil {
                     Text(L("That combination is already used by another app: choose a different one.")).font(.caption).foregroundStyle(.red)
                 }
             }
+            Section {
+                HotKeyEditor(enabled: $store.settings.aiHotKeyEnabled, key: $store.settings.askHotKeyKey,
+                             control: $store.settings.askHotKeyControl, option: $store.settings.askHotKeyOption,
+                             shift: $store.settings.askHotKeyShift, command: $store.settings.askHotKeyCommand,
+                             label: store.settings.askHotKeyLabel)
+                if store.settings.hotKeysClash {
+                    Text(L("It's the same combination as New note: choose a different one.")).font(.caption).foregroundStyle(.red)
+                }
+            } header: {
+                Text(L("Ask Foglietti from any app"))
+            } footer: {
+                Text(L("If nothing happens when you press it, another app (a launcher, a taskbar…) is using the same combination: pick another one, e.g. ⌃⌥A."))
+            }
             Section(L("In notes")) {
+                LabeledContent(L("Ask Foglietti (from any app)"), value: store.settings.aiHotKeyEnabled ? store.settings.askHotKeyLabel : L("Off"))
                 ForEach(shortcuts, id: \.0) { LabeledContent($0.0, value: $0.1) }
             }
         }
@@ -439,7 +444,7 @@ struct ShortcutSettings: View {
         (L("New note"), "⌘N"), (L("Close note"), "⌘W"), (L("Bold / Italic / Underline"), "⌘B / ⌘I / ⌘U"),
         (L("Strikethrough"), "⇧⌘X"), (L("Highlight"), "⇧⌘H"), (L("Checkbox"), "⇧⌘L"),
         (L("Title / Subtitle / Body"), "⌘1 / ⌘2 / ⌘0"), (L("Bigger / Smaller text"), "⌘+ / ⌘−"),
-        (L("Insert date"), "⇧⌘D"), (L("Emoji"), "⌃⌘E"), (L("Insert screenshot"), "⇧⌘I"), (L("Open image in Preview"), L("double-click")), (L("AI actions on the note"), "⌘J"), (L("Translate note"), "⌥⌘T"), (L("Custom AI instruction"), "⇧⌘J"), (L("Ask Foglietti (from any app)"), "⌃⌥Spazio"), (L("System emoji & symbols"), "⌃⌘Spazio"), (L("Send by email"), "⇧⌘M"), (L("Send via WhatsApp"), "⌃⌘W"), (L("Paste with formatting"), "⌥⌘V"), (L("Note list"), "⇧⌘E"),
+        (L("Insert date"), "⇧⌘D"), (L("Emoji"), "⌃⌘E"), (L("Insert screenshot"), "⇧⌘I"), (L("Open image in Preview"), L("double-click")), (L("AI actions on the note"), "⌘J"), (L("Translate note"), "⌥⌘T"), (L("Custom AI instruction"), "⇧⌘J"), (L("System emoji & symbols"), "⌃⌘" + L("Space")), (L("Send by email"), "⇧⌘M"), (L("Send via WhatsApp"), "⌃⌘W"), (L("Paste with formatting"), "⌥⌘V"), (L("Note list"), "⇧⌘E"),
         (L("Collapse to bar"), L("double-click the bar")),
     ]
 }
@@ -548,7 +553,7 @@ struct AISettings: View {
                     Label(L("Ready. The model runs on this Mac: notes are never sent to any server."), systemImage: "checkmark.seal.fill")
                         .foregroundStyle(.green)
                 }
-                Toggle(L("\"Ask Foglietti\" from any app with ⌃⌥Space"), isOn: $store.settings.aiHotKeyEnabled)
+                Toggle(L("\"Ask Foglietti\" from any app with %@", store.settings.askHotKeyLabel), isOn: $store.settings.aiHotKeyEnabled)
             }
             Section {
                 ForEach(Array(store.settings.translateLanguages.enumerated()), id: \.offset) { i, code in
@@ -665,5 +670,37 @@ struct SoundSettings: View {
             }
         }
         .formStyle(.grouped)
+    }
+}
+
+/// Editor for a global shortcut: on/off, modifier keys and the main key.
+struct HotKeyEditor: View {
+    @Binding var enabled: Bool
+    @Binding var key: String
+    @Binding var control: Bool
+    @Binding var option: Bool
+    @Binding var shift: Bool
+    @Binding var command: Bool
+    let label: String
+    private let keys = ["Space"] + (65...90).map { String(UnicodeScalar($0)!) } + (0...9).map(String.init)
+
+    var body: some View {
+        Toggle(L("Enable global shortcut"), isOn: $enabled)
+        HStack(spacing: 16) {
+            Toggle(L("⌃ Control"), isOn: $control)
+            Toggle(L("⌥ Option"), isOn: $option)
+            Toggle(L("⇧ Shift"), isOn: $shift)
+            Toggle(L("⌘ Command"), isOn: $command)
+        }
+        .disabled(!enabled)
+        Picker(L("Key"), selection: $key) {
+            ForEach(keys, id: \.self) { Text($0 == "Space" ? L("Space") : $0).tag($0) }
+        }
+        .disabled(!enabled)
+        LabeledContent(L("Current shortcut"), value: label)
+        if enabled && !(control || option || shift || command) {
+            Text(L("Add at least one modifier key (⌃ ⌥ ⇧ ⌘)."))
+                .font(.caption).foregroundStyle(.orange)
+        }
     }
 }

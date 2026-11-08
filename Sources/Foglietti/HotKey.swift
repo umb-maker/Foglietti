@@ -1,7 +1,7 @@
 import Carbon
 
 /// Global shortcuts (they work even when Foglietti is not in front):
-/// 1 = new note (configurable), 2 = "Ask Foglietti" (⌃⌥Space).
+/// 1 = new note, 2 = "Ask Foglietti"; both configurable in Settings → Shortcuts.
 @MainActor
 final class HotKey {
     static let shared = HotKey()
@@ -17,7 +17,7 @@ final class HotKey {
         "G": kVK_ANSI_G, "H": kVK_ANSI_H, "I": kVK_ANSI_I, "J": kVK_ANSI_J, "K": kVK_ANSI_K, "L": kVK_ANSI_L,
         "M": kVK_ANSI_M, "N": kVK_ANSI_N, "O": kVK_ANSI_O, "P": kVK_ANSI_P, "Q": kVK_ANSI_Q, "R": kVK_ANSI_R,
         "S": kVK_ANSI_S, "T": kVK_ANSI_T, "U": kVK_ANSI_U, "V": kVK_ANSI_V, "W": kVK_ANSI_W, "X": kVK_ANSI_X,
-        "Y": kVK_ANSI_Y, "Z": kVK_ANSI_Z, "0": kVK_ANSI_0, "1": kVK_ANSI_1, "2": kVK_ANSI_2, "3": kVK_ANSI_3,
+        "Y": kVK_ANSI_Y, "Z": kVK_ANSI_Z, "Space": kVK_Space, "0": kVK_ANSI_0, "1": kVK_ANSI_1, "2": kVK_ANSI_2, "3": kVK_ANSI_3,
         "4": kVK_ANSI_4, "5": kVK_ANSI_5, "6": kVK_ANSI_6, "7": kVK_ANSI_7, "8": kVK_ANSI_8, "9": kVK_ANSI_9,
     ]
 
@@ -36,7 +36,14 @@ final class HotKey {
             // without modifiers it would steal an ordinary key
             if mods != 0, register(id: 1, code: code, mods: mods) != noErr { lastError = -1 }
         }
-        if s.aiHotKeyEnabled { _ = register(id: 2, code: kVK_Space, mods: controlKey | optionKey) }
+        if s.aiHotKeyEnabled, !s.hotKeysClash, let code = Self.keyCodes[s.askHotKeyKey] {
+            var mods = 0
+            if s.askHotKeyCommand { mods |= cmdKey }
+            if s.askHotKeyControl { mods |= controlKey }
+            if s.askHotKeyOption { mods |= optionKey }
+            if s.askHotKeyShift { mods |= shiftKey }
+            if mods != 0 { _ = register(id: 2, code: code, mods: mods) }
+        }
     }
 
     private func register(id: UInt32, code: Int, mods: Int) -> OSStatus {

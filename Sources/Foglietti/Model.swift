@@ -288,6 +288,11 @@ struct AppSettings: Codable, Equatable {
     var hotKeyControl = true
     var hotKeyOption = true
     var hotKeyShift = false
+    var askHotKeyKey = "Space"
+    var askHotKeyCommand = false
+    var askHotKeyControl = true
+    var askHotKeyOption = true
+    var askHotKeyShift = false
     var emailRecipient = ""
     var emailFormatted = true
     var trashDays = 30
@@ -328,6 +333,11 @@ struct AppSettings: Codable, Equatable {
         s.hotKeyControl = c.v(.hotKeyControl, s.hotKeyControl)
         s.hotKeyOption = c.v(.hotKeyOption, s.hotKeyOption)
         s.hotKeyShift = c.v(.hotKeyShift, s.hotKeyShift)
+        s.askHotKeyKey = c.v(.askHotKeyKey, s.askHotKeyKey)
+        s.askHotKeyCommand = c.v(.askHotKeyCommand, s.askHotKeyCommand)
+        s.askHotKeyControl = c.v(.askHotKeyControl, s.askHotKeyControl)
+        s.askHotKeyOption = c.v(.askHotKeyOption, s.askHotKeyOption)
+        s.askHotKeyShift = c.v(.askHotKeyShift, s.askHotKeyShift)
         s.emailRecipient = c.v(.emailRecipient, s.emailRecipient)
         s.emailFormatted = c.v(.emailFormatted, s.emailFormatted)
         s.trashDays = c.v(.trashDays, s.trashDays)
@@ -351,7 +361,21 @@ struct AppSettings: Codable, Equatable {
     }
 
     var hotKeyLabel: String {
-        (hotKeyControl ? "⌃" : "") + (hotKeyOption ? "⌥" : "") + (hotKeyShift ? "⇧" : "") + (hotKeyCommand ? "⌘" : "") + hotKeyKey
+        Self.label(hotKeyKey, control: hotKeyControl, option: hotKeyOption, shift: hotKeyShift, command: hotKeyCommand)
+    }
+
+    var askHotKeyLabel: String {
+        Self.label(askHotKeyKey, control: askHotKeyControl, option: askHotKeyOption, shift: askHotKeyShift, command: askHotKeyCommand)
+    }
+
+    /// True when both global shortcuts are on and use the same keys (only one could work).
+    var hotKeysClash: Bool {
+        hotKeyEnabled && aiHotKeyEnabled && hotKeyKey == askHotKeyKey && hotKeyControl == askHotKeyControl
+            && hotKeyOption == askHotKeyOption && hotKeyShift == askHotKeyShift && hotKeyCommand == askHotKeyCommand
+    }
+
+    static func label(_ key: String, control: Bool, option: Bool, shift: Bool, command: Bool) -> String {
+        (control ? "⌃" : "") + (option ? "⌥" : "") + (shift ? "⇧" : "") + (command ? "⌘" : "") + (key == "Space" ? L("Space") : key)
     }
 }
 

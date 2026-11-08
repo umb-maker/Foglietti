@@ -39,7 +39,7 @@ The interface is in English, and in Italian when the Mac's language is Italian.
 **On-device intelligence**
 - ✨ Apple Intelligence (⌘J): summarize, proofread, rewrite, change tone, turn into a checklist, keep writing, or give a custom instruction (⇧⌘J). The menu actions are editable in Settings.
 - **Find reminder in text** spots phrases like "Thursday at 5:30 PM" and offers to set the reminder.
-- **Ask Foglietti** (⌃⌥Space from any app): "remind me tomorrow at 9 to…", "what reminders do I have?", "what does the note about… say?".
+- **Ask Foglietti** (⌃⌥Space from any app, or a shortcut you choose): "remind me tomorrow at 9 to…", "what reminders do I have?", "what does the note about… say?".
 - 🌐 Translation with Apple Translate (⌥⌘T): 20 languages, automatic source-language detection, works offline.
 
 ## Requirements
@@ -64,7 +64,7 @@ On first launch a welcome window lets you turn on notifications and open at logi
 | Action | Keys |
 |---|---|
 | New note (from any app) | ⌃⌥N (configurable) |
-| Ask Foglietti (from any app) | ⌃⌥Space |
+| Ask Foglietti (from any app) | ⌃⌥Space (configurable) |
 | AI actions / custom instruction | ⌘J / ⇧⌘J |
 | Translate | ⌥⌘T |
 | Emoji | ⌃⌘E |

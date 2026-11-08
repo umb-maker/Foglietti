@@ -15,6 +15,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         HotKey.shared.action = { NotesManager.shared.newNote() }
         HotKey.shared.askAction = { AskController.shared.show() }
         NSApp.mainMenu = buildMainMenu()
+        updateAskMenuItem()
 
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         statusItem.button?.image = NSImage(systemSymbolName: "note.text", accessibilityDescription: "Foglietti")
@@ -42,7 +43,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
 
+    /// The menu shows the current "Ask Foglietti" shortcut (the global hotkey handles it when Foglietti isn't in front).
+    private func updateAskMenuItem() {
+        guard let item = NSApp.mainMenu?.items.compactMap(\.submenu).flatMap(\.items).first(where: { $0.action == #selector(showAsk) }) else { return }
+        let s = store.settings
+        guard s.aiHotKeyEnabled, !s.hotKeysClash else { item.keyEquivalent = ""; return }
+        item.keyEquivalent = s.askHotKeyKey == "Space" ? " " : s.askHotKeyKey.lowercased()
+        var mods: NSEvent.ModifierFlags = []
+        if s.askHotKeyControl { mods.insert(.control) }
+        if s.askHotKeyOption { mods.insert(.option) }
+        if s.askHotKeyShift { mods.insert(.shift) }
+        if s.askHotKeyCommand { mods.insert(.command) }
+        item.keyEquivalentModifierMask = mods
+    }
+
     private func applySettings() {
+        updateAskMenuItem()
         NSApp.setActivationPolicy(store.settings.showInDock ? .regular : .accessory)
         HotKey.shared.apply(store.settings)
     }
@@ -222,7 +238,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             item(L("Align right"), #selector(NSText.alignRight(_:)), "}", [.command]),
         ])
         submenu("AI", [
-            item(L("Ask Foglietti…  (⌃⌥Space)"), #selector(showAsk), target: self),
+            item(L("Ask Foglietti…"), #selector(showAsk), target: self),
             .separator(),
             item(L("Note actions…"), #selector(NoteWindowController.showAIMenu(_:)), "j"),
             item(L("Custom instruction…"), #selector(NoteWindowController.runAIFreePrompt), "j", [.command, .shift]),

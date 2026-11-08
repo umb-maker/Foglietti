@@ -117,8 +117,8 @@ struct WelcomeView: View {
             VStack(alignment: .leading, spacing: 6) {
                 Text(L("Good to know")).font(.headline)
                 Grid(alignment: .leading, horizontalSpacing: 14, verticalSpacing: 5) {
-                    GridRow { Text("⌃⌥N").monospaced(); Text(L("new note, from any app")) }
-                    GridRow { Text("⌃⌥Space").monospaced(); Text(L("Ask Foglietti, from any app")) }
+                    GridRow { Text(store.settings.hotKeyLabel).monospaced(); Text(L("new note, from any app")) }
+                    GridRow { Text(store.settings.askHotKeyLabel).monospaced(); Text(L("Ask Foglietti, from any app")) }
                     GridRow { Text("🎨").monospaced(); Text(L("customize a note: colors, fonts, Liquid Glass")) }
                     GridRow { Text("🗒").monospaced(); Text(L("everything else is in the menu bar icon")) }
                 }
