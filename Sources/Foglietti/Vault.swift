@@ -48,6 +48,7 @@ final class Vault {
     // MARK: Lifecycle
 
     func start() {
+        Self.purgeTemporaryFiles()
         timer = Timer.scheduledTimer(withTimeInterval: 20, repeats: true) { _ in
             Task { @MainActor in Vault.shared.lockIfIdle() }
         }
@@ -73,6 +74,7 @@ final class Vault {
         guard isUnlocked else { return }
         NotesManager.shared.flushAll()      // encrypt what is open before the key goes away
         key = nil
+        Self.purgeTemporaryFiles()
         NotificationCenter.default.post(name: Self.changed, object: nil)
     }
 
@@ -95,9 +97,15 @@ final class Vault {
         didUnlock(k)
     }
 
+    /// Rejects vault data that can't come from Foglietti (e.g. a tampered data file),
+    /// instead of hanging or crashing on an absurd number of rounds.
+    private static func isPlausible(_ v: VaultInfo) -> Bool {
+        (100_000...10_000_000).contains(v.rounds) && v.salt.count >= 16 && v.check.count >= 28
+    }
+
     @discardableResult
     func unlock(password: String) -> Bool {
-        guard let v = store.vault else { return false }
+        guard let v = store.vault, Self.isPlausible(v) else { return false }
         let k = Self.derive(password, salt: v.salt, rounds: v.rounds)
         guard Self.verify(k, v) else { return false }
         didUnlock(k)
@@ -106,7 +114,7 @@ final class Vault {
 
     /// Changes the master password and re-encrypts every protected note with the new key.
     func changePassword(old: String, new: String) throws {
-        guard let v = store.vault else { return }
+        guard let v = store.vault, Self.isPlausible(v) else { throw VaultError.wrongPassword }
         let oldKey = Self.derive(old, salt: v.salt, rounds: v.rounds)
         guard Self.verify(oldKey, v) else { throw VaultError.wrongPassword }
         NotesManager.shared.flushAll()
@@ -115,6 +123,15 @@ final class Vault {
         for (id, data) in payloads {
             if let sealed = try? seal(data) { store.update(id) { $0.cipher = sealed; $0.modified = Date() } }
         }
+        store.rewriteBackup()   // the backup must not keep notes encrypted with the old password
+    }
+
+    /// Removes the images Foglietti wrote to the temporary folder (Preview, email attachments, drops,
+    /// screenshots): they may come from protected notes.
+    static func purgeTemporaryFiles() {
+        let tmp = FileManager.default.temporaryDirectory
+        let items = (try? FileManager.default.contentsOfDirectory(at: tmp, includingPropertiesForKeys: nil)) ?? []
+        for url in items where url.lastPathComponent.hasPrefix("Foglietti-") { try? FileManager.default.removeItem(at: url) }
     }
 
     private static func verify(_ k: SymmetricKey, _ v: VaultInfo) -> Bool {
@@ -241,14 +258,15 @@ final class Vault {
         let a = NSAlert()
         a.messageText = L("Create a master password")
         a.informativeText = L("It encrypts your protected notes. If you forget it, those notes can't be recovered by anyone, not even by restoring a backup.")
+            + "\n\n" + L("Tip: protect a note before writing secrets in it. Copies made earlier by Time Machine or iCloud Drive stay as they were.")
         a.accessoryView = stack
         a.addButton(withTitle: L("Create"))
         a.addButton(withTitle: L("Cancel"))
         a.window.initialFirstResponder = p1
         NSApp.activate(ignoringOtherApps: true)
         while a.runModal() == .alertFirstButtonReturn {
-            if p1.stringValue.count < 6 {
-                a.informativeText = L("Use at least 6 characters.")
+            if p1.stringValue.count < 8 {
+                a.informativeText = L("Use at least 8 characters. A short phrase is easier to remember and harder to guess.")
             } else if p1.stringValue != p2.stringValue {
                 a.informativeText = L("The two passwords don't match.")
             } else {

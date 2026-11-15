@@ -34,17 +34,39 @@ if args.contains("--vault-selftest"), args.contains("--data-dir") {
         var n = Note()
         n.setText(NSAttributedString(string: secret))
         store.notes = [n]
+        store.saveNow(skipMerge: true)
+        // a session backup taken while the note was still in plain text
+        try? FileManager.default.copyItem(at: store.fileURL, to: store.backupURL)
         try! vault.setUp(password: "correct horse", useTouchID: nil)
         store.update(n.id) { try? $0.protect() }
-        store.saveNow(skipMerge: true)
+        store.rewriteBackup()
+        let backup = (try? String(contentsOf: store.backupURL, encoding: .utf8)) ?? ""
+        check(!backup.contains("4711"), "backup no longer holds the plain text after protecting")
         let file = (try? String(contentsOf: store.fileURL, encoding: .utf8)) ?? ""
         check(!file.contains("4711") && !file.contains("top secret"), "secret text is not in the data file")
         check(store.note(n.id)?.plainText == "" && store.note(n.id)?.isProtected == true, "note keeps no plain text")
         vault.lock()
         check(store.note(n.id)?.readable == nil, "locked note can't be read")
         check(!vault.unlock(password: "wrong"), "wrong password is rejected")
+        let realVault = store.vault
+        store.vault?.rounds = 5
+        check(!vault.unlock(password: "correct horse"), "tampered vault data is rejected")
+        store.vault = realVault
         check(vault.unlock(password: "correct horse"), "right password unlocks")
         check(store.note(n.id)?.readable?.plainText == secret, "unlocked note reads back intact")
+        // another Mac writes an older, unprotected copy with a newer date: protection must win
+        store.saveNow(skipMerge: true)
+        if var json = try? JSONSerialization.jsonObject(with: Data(contentsOf: store.fileURL)) as? [String: Any],
+           var notes = json["notes"] as? [[String: Any]] {
+            notes[0]["cipher"] = nil
+            notes[0]["plainText"] = secret
+            notes[0]["modified"] = ISO8601DateFormatter().string(from: Date().addingTimeInterval(3600))
+            json["notes"] = notes
+            Thread.sleep(forTimeInterval: 1.1)   // a different modification date on disk
+            try? JSONSerialization.data(withJSONObject: json).write(to: store.fileURL)
+            store.checkForExternalChanges()
+        }
+        check(store.note(n.id)?.isProtected == true, "an unprotected copy from another Mac doesn't replace the protected note")
         store.update(n.id) { try? $0.removeProtection() }
         check(store.note(n.id)?.plainText == secret && store.note(n.id)?.isProtected == false, "removing protection restores the text")
         exit(0)

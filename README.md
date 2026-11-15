@@ -81,7 +81,11 @@ The full list is in Settings → Shortcuts.
 ## Data and privacy
 
 - Notes are stored in `~/Library/Application Support/Foglietti/foglietti.json`, or in iCloud Drive if you turn on sync. The file is readable JSON, and the text is stored as RTFD so it keeps formatting and images.
-- Protected notes are stored only encrypted, in the data file, in backups and in iCloud Drive. The master password is never saved; with Touch ID on, the derived key is kept in your login keychain. If you forget the master password, protected notes can't be recovered.
+- Protected notes are stored only encrypted, in the data file, in backups and in iCloud Drive. Protecting a note rewrites the backup right away, so no plain copy is left there. The master password is never saved; if you forget it, protected notes can't be recovered.
+- With Touch ID on, the key derived from the master password is kept in your login keychain and released after Touch ID inside the app. macOS protects the keychain item, but with a local (ad-hoc) signature it can't be bound to biometrics at the system level; that needs a Developer ID build.
+- When protected notes lock (after inactivity, on sleep, on screen lock or on quit), Foglietti clears the note's undo history, closes AI and Translate panels and deletes the images it wrote to the temporary folder.
+- If another Mac syncs an unprotected copy of a protected note, the protected version is kept.
+- Protect a note *before* writing secrets in it: copies made earlier by Time Machine or by iCloud Drive's version history stay as they were.
 - A backup copy, `foglietti.backup.json`, is made at every launch.
 - Apple Intelligence and Apple Translate run on the Mac: the text of your notes is never sent to any server.
 - The update check only reads the public release list of this repository on GitHub, once a day; it sends no data about you or your notes, and it can be turned off in Settings → About & Updates.

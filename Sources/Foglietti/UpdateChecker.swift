@@ -60,7 +60,10 @@ final class UpdateChecker {
               let tag = json["tag_name"] as? String,
               let page = (json["html_url"] as? String).flatMap(URL.init(string:)) else { return nil }
         let version = tag.hasPrefix("v") ? String(tag.dropFirst()) : tag
-        return Release(version: version, url: page, notes: json["body"] as? String ?? "")
+        // open only this repository's release pages, whatever the response says
+        let fallback = URL(string: "https://github.com/\(Self.repository)/releases")!
+        let trusted = page.scheme == "https" && page.host == "github.com" && page.path.hasPrefix("/\(Self.repository)/releases/")
+        return Release(version: version, url: trusted ? page : fallback, notes: json["body"] as? String ?? "")
     }
 
     /// Compares dotted versions numerically: 1.10.0 is newer than 1.9.2.

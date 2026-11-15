@@ -128,7 +128,11 @@ final class NoteStore: ObservableObject {
 
         var byID = Dictionary(notes.map { ($0.id, $0) }, uniquingKeysWith: { a, _ in a })
         for r in remote.notes {
-            if let local = byID[r.id], local.modified >= r.modified { continue }
+            if let local = byID[r.id] {
+                if local.modified >= r.modified { continue }
+                // never let an unprotected copy from another Mac silently replace a protected note
+                if local.isProtected && !r.isProtected { continue }
+            }
             byID[r.id] = r
         }
         let merged = byID.values.filter { tombstones[$0.id] == nil }
@@ -185,13 +189,9 @@ final class NoteStore: ObservableObject {
             return
         }
         if !backedUp, FileManager.default.fileExists(atPath: fileURL.path) {
-            // one copy per session (stored locally), in case something goes wrong
-            // with iCloud the backup stays on this Mac; otherwise it sits next to the data file
-            let backupDir = usesICloud ? Self.localDirectory : directory
-            try? FileManager.default.createDirectory(at: backupDir, withIntermediateDirectories: true)
-            let backup = backupDir.appendingPathComponent("foglietti.backup.json")
-            try? FileManager.default.removeItem(at: backup)
-            try? FileManager.default.copyItem(at: fileURL, to: backup)
+            // one copy per session, in case something goes wrong
+            try? FileManager.default.removeItem(at: backupURL)
+            try? FileManager.default.copyItem(at: fileURL, to: backupURL)
             backedUp = true
         }
         do {
@@ -202,6 +202,22 @@ final class NoteStore: ObservableObject {
         } catch {
             NSLog("Foglietti: save failed: \(error)")
         }
+    }
+
+    /// With iCloud the backup stays on this Mac; otherwise it sits next to the data file.
+    var backupURL: URL {
+        let dir = usesICloud ? Self.localDirectory : directory
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        return dir.appendingPathComponent("foglietti.backup.json")
+    }
+
+    /// Replaces the backup with the current (encrypted) state: called when a note gets protected,
+    /// so its old plain text doesn't survive in the backup until the next launch.
+    func rewriteBackup() {
+        saveNow(skipMerge: true)
+        try? FileManager.default.removeItem(at: backupURL)
+        try? FileManager.default.copyItem(at: fileURL, to: backupURL)
+        backedUp = true
     }
 
     /// Moves the storage (e.g. to iCloud Drive). If notes are already there, they are merged.

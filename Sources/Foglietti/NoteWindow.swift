@@ -191,6 +191,7 @@ final class NoteWindowController: NSWindowController, NSWindowDelegate, NSTextVi
         win.isOpaque = false
         win.backgroundColor = .clear
         win.isReleasedWhenClosed = false
+        win.isRestorable = false     // no window snapshots saved by macOS
         win.minSize = NSSize(width: 140, height: 60)
         win.contentView = container
         super.init(window: win)
@@ -224,6 +225,9 @@ final class NoteWindowController: NSWindowController, NSWindowDelegate, NSTextVi
             } else {
                 ts.setAttributedString(NSAttributedString())
                 lastSealed = nil
+                // the undo history and the AI / Translate panels still hold decrypted text
+                textView.undoManager?.removeAllActions()
+                aiPanel?.close()
                 setLockedView(true, style: note.style)
             }
         } else {
@@ -270,10 +274,12 @@ final class NoteWindowController: NSWindowController, NSWindowDelegate, NSTextVi
             guard let n = store.note(noteID) else { return }
             if !n.isProtected, !Vault.shared.isSetUp { guard Vault.shared.runSetup() else { return } }
             guard await Vault.shared.ensureUnlocked() else { return }
+            let protecting = !n.isProtected
             store.update(noteID) { n in
                 if n.isProtected { try? n.removeProtection() } else { try? n.protect() }
                 n.modified = Date()
             }
+            if protecting { store.rewriteBackup() }   // the backup must not keep the old plain text
         }
     }
     required init?(coder: NSCoder) { fatalError() }

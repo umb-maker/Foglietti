@@ -790,7 +790,7 @@ struct ProtectedSettings: View {
         a.addButton(withTitle: L("Cancel"))
         a.window.initialFirstResponder = old
         while a.runModal() == .alertFirstButtonReturn {
-            if p1.stringValue.count < 6 { a.informativeText = L("Use at least 6 characters."); continue }
+            if p1.stringValue.count < 8 { a.informativeText = L("Use at least 8 characters. A short phrase is easier to remember and harder to guess."); continue }
             if p1.stringValue != p2.stringValue { a.informativeText = L("The two passwords don't match."); continue }
             do {
                 try Vault.shared.changePassword(old: old.stringValue, new: p1.stringValue)

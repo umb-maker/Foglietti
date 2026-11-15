@@ -452,3 +452,7 @@
 "Wrong password." = "Password errata.";
 "Wrong password. Try again." = "Password errata. Riprova.";
 "unlock your protected notes" = "sbloccare le note protette";
+
+/* 1.4.1: sicurezza */
+"Use at least 8 characters. A short phrase is easier to remember and harder to guess." = "Usa almeno 8 caratteri. Una breve frase è più facile da ricordare e più difficile da indovinare.";
+"Tip: protect a note before writing secrets in it. Copies made earlier by Time Machine or iCloud Drive stay as they were." = "Consiglio: proteggi una nota prima di scriverci informazioni riservate. Le copie fatte prima da Time Machine o da iCloud Drive restano com'erano.";
