@@ -197,6 +197,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             .separator(),
             item(L("Move note to Trash"), #selector(NoteWindowController.deleteNote)),
             item(L("Protect / Unprotect Note"), #selector(NoteWindowController.toggleProtection)),
+            item(L("Remind Me and Close…"), #selector(NoteWindowController.remindAndCloseCustom(_:)), "r", [.command, .shift]),
             item(L("Lock Protected Notes"), #selector(lockVault), "l", [.command, .control], target: self),
             item(L("Send note by email…"), #selector(NoteWindowController.sendEmail(_:)), "m", [.command, .shift]),
             item(L("Send note via WhatsApp"), #selector(NoteWindowController.sendWhatsApp(_:)), "w", [.command, .control]),

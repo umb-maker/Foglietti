@@ -156,10 +156,23 @@ final class Reminders: NSObject, UNUserNotificationCenterDelegate {
         if let monday = cal.nextDate(after: now, matching: DateComponents(weekday: 2), matchingPolicy: .nextTime) {
             out.append((L("Monday at 9 AM"), at(monday, 9)))
         }
+        if let week = cal.date(byAdding: .day, value: 7, to: now) {
+            out.append((L("In a week, at 9 AM"), at(week, 9)))
+        }
+        // first day of next month, e.g. "December 1 at 9 AM"
+        var c = cal.dateComponents([.year, .month], from: now)
+        c.month = (c.month ?? 1) + 1
+        c.day = 1
+        c.hour = 9
+        if let first = cal.date(from: c) {
+            let f = DateFormatter()
+            f.setLocalizedDateFormatFromTemplate("MMMMd")
+            out.append((L("%@ at 9 AM", f.string(from: first)), first))
+        }
         return out
     }
 
-    static func askDate(initial: Date?) -> Date? {
+    static func askDate(initial: Date?, closing: Bool = false) -> Date? {
         let picker = NSDatePicker()
         picker.datePickerStyle = .clockAndCalendar
         picker.datePickerElements = [.yearMonthDay, .hourMinute]
@@ -168,6 +181,7 @@ final class Reminders: NSObject, UNUserNotificationCenterDelegate {
         picker.sizeToFit()
         let a = NSAlert()
         a.messageText = L("When should I remind you of this note?")
+        if closing { a.informativeText = L("The note closes now and comes back by itself at that time.") }
         a.accessoryView = picker
         a.addButton(withTitle: L("Set"))
         a.addButton(withTitle: L("Cancel"))

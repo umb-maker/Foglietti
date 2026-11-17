@@ -851,6 +851,22 @@ final class NoteWindowController: NSWindowController, NSWindowDelegate, NSTextVi
         let custom = NSMenuItem(title: L("Date and time…"), action: #selector(setReminderCustom), keyEquivalent: "")
         custom.target = self
         m.addItem(custom)
+        // the same choices, but the note also closes: it comes back by itself on that day
+        m.addItem(.separator())
+        let later = NSMenuItem(title: L("Remind Me and Close"), action: nil, keyEquivalent: "")
+        later.image = NSImage(systemSymbolName: "clock.arrow.circlepath", accessibilityDescription: nil)
+        let sub = NSMenu()
+        for (title, date) in Reminders.presets() {
+            let i = NSMenuItem(title: title, action: #selector(remindAndClose(_:)), keyEquivalent: "")
+            i.target = self
+            i.representedObject = date
+            sub.addItem(i)
+        }
+        let subCustom = NSMenuItem(title: L("Date and time…"), action: #selector(remindAndCloseCustom(_:)), keyEquivalent: "")
+        subCustom.target = self
+        sub.addItem(subCustom)
+        later.submenu = sub
+        m.addItem(later)
         if applied?.reminder != nil {
             m.addItem(.separator())
             let rm = NSMenuItem(title: L("Remove reminder"), action: #selector(removeReminder), keyEquivalent: "")
@@ -905,6 +921,19 @@ final class NoteWindowController: NSWindowController, NSWindowDelegate, NSTextVi
     }
 
     @objc func toggleImportant() { store.update(noteID) { $0.importantReminder.toggle() } }
+
+    @objc func remindAndClose(_ sender: NSMenuItem) {
+        guard let d = sender.representedObject as? Date else { return }
+        Reminders.shared.set(noteID, at: d)
+        closeNote()
+    }
+
+    /// ⇧⌘R: pick a date, then the note closes and comes back by itself at that time.
+    @objc func remindAndCloseCustom(_ sender: Any?) {
+        guard let d = Reminders.askDate(initial: applied?.reminder, closing: true) else { return }
+        Reminders.shared.set(noteID, at: d)
+        closeNote()
+    }
 
     @objc func setReminderPreset(_ sender: NSMenuItem) {
         if let d = sender.representedObject as? Date { Reminders.shared.set(noteID, at: d) }

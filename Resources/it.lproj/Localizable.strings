@@ -456,3 +456,13 @@
 /* 1.4.1: sicurezza */
 "Use at least 8 characters. A short phrase is easier to remember and harder to guess." = "Usa almeno 8 caratteri. Una breve frase è più facile da ricordare e più difficile da indovinare.";
 "Tip: protect a note before writing secrets in it. Copies made earlier by Time Machine or iCloud Drive stay as they were." = "Consiglio: proteggi una nota prima di scriverci informazioni riservate. Le copie fatte prima da Time Machine o da iCloud Drive restano com'erano.";
+
+/* 1.5: ricordamelo e chiudi, in programma */
+"Remind Me and Close" = "Ricordamelo e chiudi";
+"Remind Me and Close…" = "Ricordamelo e chiudi…";
+"Remind me and close" = "Ricordamelo e chiudi";
+"The note closes now and comes back by itself at that time." = "La nota si chiude ora e ricompare da sola a quell'ora.";
+"In a week, at 9 AM" = "Tra una settimana, alle 9:00";
+"%@ at 9 AM" = "%@ alle 9:00";
+"Upcoming" = "In programma";
+"No upcoming reminders" = "Nessun promemoria in programma";

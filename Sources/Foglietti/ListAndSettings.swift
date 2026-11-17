@@ -16,9 +16,15 @@ struct NotesListView: View {
 
     private var filtered: [Note] {
         store.notes
-            .filter { section == 2 ? $0.isTrashed : (!$0.isTrashed && $0.archived == (section == 1)) }
+            .filter {
+                switch section {
+                case 2: $0.isTrashed
+                case 3: !$0.isTrashed && $0.reminder != nil     // upcoming: notes waiting for a reminder
+                default: !$0.isTrashed && $0.archived == (section == 1)
+                }
+            }
             .filter { query.isEmpty || $0.plainText.localizedCaseInsensitiveContains(query) }
-            .sorted { $0.modified > $1.modified }
+            .sorted { section == 3 ? ($0.reminder ?? .distantFuture) < ($1.reminder ?? .distantFuture) : $0.modified > $1.modified }
     }
 
     var body: some View {
@@ -26,12 +32,13 @@ struct NotesListView: View {
             HStack {
                 Picker("", selection: $section) {
                     Text(L("Notes")).tag(0)
+                    Text(L("Upcoming")).tag(3)
                     Text(L("Archive")).tag(1)
                     Text(L("Trash")).tag(2)
                 }
                 .pickerStyle(.segmented)
                 .labelsHidden()
-                .frame(width: 240)
+                .frame(width: 330)
                 TextField(L("Search"), text: $query).textFieldStyle(.roundedBorder)
                 Button { manager.newNote() } label: { Label(L("New"), systemImage: "plus") }
             }
@@ -45,7 +52,7 @@ struct NotesListView: View {
             }
             .overlay {
                 if filtered.isEmpty {
-                    Text(query.isEmpty ? ([L("No notes"), L("No archived notes"), L("The trash is empty")][section]) : L("No results"))
+                    Text(query.isEmpty ? ([L("No notes"), L("No archived notes"), L("The trash is empty"), L("No upcoming reminders")][section]) : L("No results"))
                         .foregroundStyle(.secondary)
                 }
             }
@@ -449,7 +456,7 @@ struct ShortcutSettings: View {
         (L("New note"), "⌘N"), (L("Close note"), "⌘W"), (L("Bold / Italic / Underline"), "⌘B / ⌘I / ⌘U"),
         (L("Strikethrough"), "⇧⌘X"), (L("Highlight"), "⇧⌘H"), (L("Checkbox"), "⇧⌘L"),
         (L("Title / Subtitle / Body"), "⌘1 / ⌘2 / ⌘0"), (L("Bigger / Smaller text"), "⌘+ / ⌘−"),
-        (L("Insert date"), "⇧⌘D"), (L("Emoji"), "⌃⌘E"), (L("Insert screenshot"), "⇧⌘I"), (L("Open image in Preview"), L("double-click")), (L("AI actions on the note"), "⌘J"), (L("Translate note"), "⌥⌘T"), (L("Custom AI instruction"), "⇧⌘J"), (L("System emoji & symbols"), "⌃⌘" + L("Space")), (L("Send by email"), "⇧⌘M"), (L("Send via WhatsApp"), "⌃⌘W"), (L("Paste with formatting"), "⌥⌘V"), (L("Note list"), "⇧⌘E"),
+        (L("Insert date"), "⇧⌘D"), (L("Remind me and close"), "⇧⌘R"), (L("Emoji"), "⌃⌘E"), (L("Insert screenshot"), "⇧⌘I"), (L("Open image in Preview"), L("double-click")), (L("AI actions on the note"), "⌘J"), (L("Translate note"), "⌥⌘T"), (L("Custom AI instruction"), "⇧⌘J"), (L("System emoji & symbols"), "⌃⌘" + L("Space")), (L("Send by email"), "⇧⌘M"), (L("Send via WhatsApp"), "⌃⌘W"), (L("Paste with formatting"), "⌥⌘V"), (L("Note list"), "⇧⌘E"),
         (L("Collapse to bar"), L("double-click the bar")),
     ]
 }

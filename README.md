@@ -24,7 +24,7 @@ The interface is in English, and in Italian when the Mac's language is Italian.
 **Organization**
 - Note list with search, archive and trash. The trash empties itself after 30 days, or after the number of days you choose.
 - **Protected notes** 🔒: encrypt a note with a master password (AES-256-GCM, key derived with PBKDF2) and unlock it with Touch ID. Locked notes show only a lock; they lock again after a few idle minutes, on sleep and when the screen locks, and they are left out of search, Ask Foglietti, sharing and export while locked.
-- Reminders 🔔: the note comes back in front of other apps and you get a notification.
+- Reminders 🔔: the note comes back in front of other apps and you get a notification. **Remind Me and Close** (⇧⌘R, or 🔔 → Remind Me and Close) sets the date and hides the note right away, e.g. write it today and have it back on December 1. The **Upcoming** tab of the note list shows every note waiting for a reminder, soonest first.
 - **Sounds**: pick any system sound or your own audio file, per note too. Set the volume, repeat until you touch the note, have the title read aloud, mark reminders as Important, and set quiet hours. Optional interface sounds.
 - Sync between Macs through iCloud Drive. Notes are merged one by one and the most recent change wins.
 
