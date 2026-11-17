@@ -1,7 +1,7 @@
 import Carbon
 
-/// Global shortcuts (they work even when Foglietti is not in front):
-/// 1 = new note, 2 = "Ask Foglietti"; both configurable in Settings → Shortcuts.
+/// Global shortcuts (they work even when Stickling is not in front):
+/// 1 = new note, 2 = "Ask Stickling"; both configurable in Settings → Shortcuts.
 @MainActor
 final class HotKey {
     static let shared = HotKey()
@@ -10,7 +10,7 @@ final class HotKey {
     private(set) var lastError: OSStatus?
     private var refs: [UInt32: EventHotKeyRef] = [:]
     private var handlerInstalled = false
-    private static let signature = OSType(0x464F_474C)   // 'FOGL'
+    private static let signature = OSType(0x5354_4B4C)   // 'STKL'
 
     private static let keyCodes: [String: Int] = [
         "A": kVK_ANSI_A, "B": kVK_ANSI_B, "C": kVK_ANSI_C, "D": kVK_ANSI_D, "E": kVK_ANSI_E, "F": kVK_ANSI_F,

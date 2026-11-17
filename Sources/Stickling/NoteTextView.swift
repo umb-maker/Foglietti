@@ -66,7 +66,7 @@ final class NoteTextView: NSTextView {
         }
         // the thumbnail shown after ⇧⌘4 / ⇧⌘5 delivers its file as a "promise"
         if let promises = pb.readObjects(forClasses: [NSFilePromiseReceiver.self], options: nil) as? [NSFilePromiseReceiver], !promises.isEmpty {
-            let dir = FileManager.default.temporaryDirectory.appendingPathComponent("Foglietti-drop-\(UUID().uuidString)")
+            let dir = FileManager.default.temporaryDirectory.appendingPathComponent("Stickling-drop-\(UUID().uuidString)")
             try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
             for p in promises {
                 p.receivePromisedFiles(atDestination: dir, options: [:], operationQueue: .main) { [weak self] url, error in
@@ -153,13 +153,13 @@ final class NoteTextView: NSTextView {
     }
 
     private func openInPreview(_ data: Data) {
-        let url = FileManager.default.temporaryDirectory.appendingPathComponent("Foglietti-image-\(UUID().uuidString.prefix(8)).png")
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("Stickling-image-\(UUID().uuidString.prefix(8)).png")
         if (try? data.write(to: url)) != nil { NSWorkspace.shared.open(url) }
     }
 
     /// Interactive selection of an area of the screen, inserted into the note (like ⇧⌘4).
     @objc func insertScreenshot(_ sender: Any?) {
-        let url = FileManager.default.temporaryDirectory.appendingPathComponent("Foglietti-capture-\(UUID().uuidString.prefix(8)).png")
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("Stickling-capture-\(UUID().uuidString.prefix(8)).png")
         let index = selectedRange().location
         let p = Process()
         p.executableURL = URL(fileURLWithPath: "/usr/sbin/screencapture")

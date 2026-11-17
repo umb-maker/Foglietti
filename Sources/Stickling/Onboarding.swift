@@ -3,7 +3,7 @@ import AppKit
 import UserNotifications
 import ServiceManagement
 
-/// Live state of what Foglietti may use. Nothing here is asked for until the user presses a button.
+/// Live state of what Stickling may use. Nothing here is asked for until the user presses a button.
 @MainActor
 final class PermissionState: ObservableObject {
     enum Status { case granted, denied, notAsked, unavailable }
@@ -71,16 +71,26 @@ struct WelcomeView: View {
             HStack(spacing: 14) {
                 Image(nsImage: NSApp.applicationIconImage).resizable().frame(width: 64, height: 64)
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(L("Welcome to Foglietti")).font(.title).bold()
+                    Text(L("Welcome to Stickling")).font(.title).bold()
                     Text(L("Sticky notes you can shape any way you like. A few things work better with your permission: each one is optional, and you can change it later."))
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
 
+            if UserDefaults.standard.bool(forKey: LegacyMigration.migratedKey) {
+                Label(L("Foglietti is now called Stickling. Your notes, themes and settings came along. macOS ties permissions to the app's name, so turn notifications and open at login back on below."),
+                      systemImage: "arrow.triangle.2.circlepath")
+                    .font(.callout)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(10)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(RoundedRectangle(cornerRadius: 10).fill(Color.accentColor.opacity(0.12)))
+            }
+
             VStack(spacing: 0) {
                 PermissionRow(symbol: "bell.badge", title: L("Notifications"),
-                              detail: L("So reminders reach you even when Foglietti is in the background."),
+                              detail: L("So reminders reach you even when Stickling is in the background."),
                               status: state.notifications, action: L("Allow"), perform: state.requestNotifications)
                 Divider()
                 PermissionRow(symbol: "power", title: L("Open at login"),
@@ -89,7 +99,7 @@ struct WelcomeView: View {
                 Divider()
                 PermissionRow(symbol: "sparkles", title: L("Apple Intelligence"),
                               detail: state.ai == .granted
-                                  ? L("Summaries, rewriting and Ask Foglietti run on your Mac. Nothing to allow.")
+                                  ? L("Summaries, rewriting and Ask Stickling run on your Mac. Nothing to allow.")
                                   : (AIAvailability.problem ?? ""),
                               status: state.ai, action: L("Open Settings"), perform: state.openAISettings)
                 Divider()
@@ -118,7 +128,7 @@ struct WelcomeView: View {
                 Text(L("Good to know")).font(.headline)
                 Grid(alignment: .leading, horizontalSpacing: 14, verticalSpacing: 5) {
                     GridRow { Text(store.settings.hotKeyLabel).monospaced(); Text(L("new note, from any app")) }
-                    GridRow { Text(store.settings.askHotKeyLabel).monospaced(); Text(L("Ask Foglietti, from any app")) }
+                    GridRow { Text(store.settings.askHotKeyLabel).monospaced(); Text(L("Ask Stickling, from any app")) }
                     GridRow { Text("🎨").monospaced(); Text(L("customize a note: colors, fonts, Liquid Glass")) }
                     GridRow { Text("🗒").monospaced(); Text(L("everything else is in the menu bar icon")) }
                 }
@@ -127,7 +137,7 @@ struct WelcomeView: View {
 
             HStack {
                 Spacer()
-                Button(L("Start using Foglietti"), action: done)
+                Button(L("Start using Stickling"), action: done)
                     .keyboardShortcut(.defaultAction)
                     .controlSize(.large)
             }
@@ -178,7 +188,7 @@ struct PermissionRow: View {
     }
 }
 
-/// Shows the welcome window on first launch (and from the Foglietti menu).
+/// Shows the welcome window on first launch (and from the Stickling menu).
 @MainActor
 final class WelcomeController {
     static let shared = WelcomeController()
@@ -208,6 +218,7 @@ final class WelcomeController {
 
     private func finish() {
         UserDefaults.standard.set(true, forKey: Self.doneKey)
+        UserDefaults.standard.removeObject(forKey: LegacyMigration.migratedKey)
         window?.close()
     }
 }

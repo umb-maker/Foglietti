@@ -230,7 +230,7 @@ struct AboutSettings: View {
                 HStack(spacing: 16) {
                     Image(nsImage: NSApp.applicationIconImage).resizable().frame(width: 72, height: 72)
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Foglietti").font(.title2).bold()
+                        Text("Stickling").font(.title2).bold()
                         Text(L("Version %@", UpdateChecker.shared.currentVersion)).foregroundStyle(.secondary)
                         Text(L("Customizable sticky notes for macOS.")).font(.callout).foregroundStyle(.secondary)
                     }
@@ -245,7 +245,7 @@ struct AboutSettings: View {
                         Button(L("Stop skipping version %@", store.settings.skippedVersion)) { store.settings.skippedVersion = "" }
                     }
                 }
-                Text(L("Foglietti looks at the public releases on GitHub once a day. Nothing is downloaded or installed without you."))
+                Text(L("Stickling looks at the public releases on GitHub once a day. Nothing is downloaded or installed without you."))
                     .font(.caption).foregroundStyle(.secondary)
             }
             Section(L("Project")) {
@@ -396,7 +396,7 @@ struct ThemesSettings: View {
 
     private func exportThemes() {
         let p = NSSavePanel()
-        p.nameFieldStringValue = L("Foglietti themes.json")
+        p.nameFieldStringValue = L("Stickling themes.json")
         p.allowedContentTypes = [.json]
         guard p.runModal() == .OK, let url = p.url else { return }
         let enc = JSONEncoder(); enc.outputFormatting = [.prettyPrinted, .sortedKeys]
@@ -440,12 +440,12 @@ struct ShortcutSettings: View {
                     Text(L("It's the same combination as New note: choose a different one.")).font(.caption).foregroundStyle(.red)
                 }
             } header: {
-                Text(L("Ask Foglietti from any app"))
+                Text(L("Ask Stickling from any app"))
             } footer: {
                 Text(L("If nothing happens when you press it, another app (a launcher, a taskbar…) is using the same combination: pick another one, e.g. ⌃⌥A."))
             }
             Section(L("In notes")) {
-                LabeledContent(L("Ask Foglietti (from any app)"), value: store.settings.aiHotKeyEnabled ? store.settings.askHotKeyLabel : L("Off"))
+                LabeledContent(L("Ask Stickling (from any app)"), value: store.settings.aiHotKeyEnabled ? store.settings.askHotKeyLabel : L("Off"))
                 ForEach(shortcuts, id: \.0) { LabeledContent($0.0, value: $0.1) }
             }
         }
@@ -481,7 +481,7 @@ struct DataSettings: View {
                     set: { on in store.moveData(to: on ? NoteStore.iCloudDirectory : NoteStore.localDirectory) }))
                     .disabled(!NoteStore.iCloudAvailable && !store.usesICloud)
                 Text(NoteStore.iCloudAvailable
-                     ? L("Install Foglietti on each Mac and turn this on: notes are merged and kept in sync (the most recent change wins). If the folder already holds notes, they are merged, not overwritten.")
+                     ? L("Install Stickling on each Mac and turn this on: notes are merged and kept in sync (the most recent change wins). If the folder already holds notes, they are merged, not overwritten.")
                      : L("iCloud Drive is not enabled on this Mac (System Settings → Apple Account → iCloud → iCloud Drive)."))
                     .font(.caption).foregroundStyle(.secondary)
                 if let d = store.lastSync {
@@ -570,7 +570,7 @@ struct AISettings: View {
                     Label(L("Ready. The model runs on this Mac: notes are never sent to any server."), systemImage: "checkmark.seal.fill")
                         .foregroundStyle(.green)
                 }
-                Toggle(L("\"Ask Foglietti\" from any app with %@", store.settings.askHotKeyLabel), isOn: $store.settings.aiHotKeyEnabled)
+                Toggle(L("\"Ask Stickling\" from any app with %@", store.settings.askHotKeyLabel), isOn: $store.settings.aiHotKeyEnabled)
             }
             Section {
                 ForEach(Array(store.settings.translateLanguages.enumerated()), id: \.offset) { i, code in

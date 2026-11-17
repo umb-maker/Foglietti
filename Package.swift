@@ -2,12 +2,12 @@
 import PackageDescription
 
 let package = Package(
-    name: "Foglietti",
+    name: "Stickling",
     platforms: [.macOS(.v14)],
     targets: [
         .executableTarget(
-            name: "Foglietti",
-            path: "Sources/Foglietti",
+            name: "Stickling",
+            path: "Sources/Stickling",
             linkerSettings: [
                 .linkedFramework("Carbon"),
                 // Apple Intelligence and Translate exist only on newer macOS: weak linking lets the app start on older systems

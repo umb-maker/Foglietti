@@ -40,7 +40,7 @@ enum Emailer {
     }
 
     private static func imageFiles(_ text: NSAttributedString) -> [URL] {
-        let dir = FileManager.default.temporaryDirectory.appendingPathComponent("Foglietti-email-\(UUID().uuidString)")
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent("Stickling-email-\(UUID().uuidString)")
         var urls: [URL] = []
         text.enumerateAttribute(.attachment, in: NSRange(location: 0, length: text.length)) { v, _, _ in
             guard let att = v as? NSTextAttachment, let (data, mime) = imageData(att) else { return }
@@ -65,7 +65,7 @@ enum Emailer {
         text.enumerateAttributes(in: NSRange(location: 0, length: text.length)) { attrs, range, _ in
             if let att = attrs[.attachment] as? NSTextAttachment {
                 if card, let img = imageData(att) {
-                    let cid = "img\(images.count + 1)@foglietti"
+                    let cid = "img\(images.count + 1)@stickling"
                     images.append(InlineImage(cid: cid, mime: img.1, data: img.0))
                     body += "<img src=\"cid:\(cid)\" style=\"max-width:100%;border-radius:4px;\">"
                 }

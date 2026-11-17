@@ -1,10 +1,12 @@
-# Foglietti
+# Stickling
 
 Customizable sticky notes for macOS: colors, fonts, Liquid Glass, themes, reminders, emoji, translation and an assistant powered by Apple Intelligence. It's a native, lightweight app (about 20 MB of memory) and everything stays on your Mac.
 
 The interface is in English, and in Italian when the Mac's language is Italian.
 
-![Foglietti in action: a new note with ⌃⌥N, checkboxes ticked with a click, and Ask Foglietti creating a note with a reminder](docs/demo.gif)
+> **Formerly Foglietti.** Up to version 1.5 the app was called Foglietti. On its first launch Stickling copies your notes, themes, preferences and (at the first Touch ID unlock) the protected-notes key from Foglietti; the old files are left untouched, so you can delete `~/Library/Application Support/Foglietti` once everything looks right. macOS ties notifications and open at login to the app, so the welcome window asks for them again. If you sync through iCloud Drive, update every Mac: the notes move to a new `Stickling` folder.
+
+![Stickling in action: a new note with ⌃⌥N, checkboxes ticked with a click, and Ask Stickling creating a note with a reminder](docs/demo.gif)
 
 ## Features
 
@@ -23,7 +25,7 @@ The interface is in English, and in Italian when the Mac's language is Italian.
 
 **Organization**
 - Note list with search, archive and trash. The trash empties itself after 30 days, or after the number of days you choose.
-- **Protected notes** 🔒: encrypt a note with a master password (AES-256-GCM, key derived with PBKDF2) and unlock it with Touch ID. Locked notes show only a lock; they lock again after a few idle minutes, on sleep and when the screen locks, and they are left out of search, Ask Foglietti, sharing and export while locked.
+- **Protected notes** 🔒: encrypt a note with a master password (AES-256-GCM, key derived with PBKDF2) and unlock it with Touch ID. Locked notes show only a lock; they lock again after a few idle minutes, on sleep and when the screen locks, and they are left out of search, Ask Stickling, sharing and export while locked.
 - Reminders 🔔: the note comes back in front of other apps and you get a notification. **Remind Me and Close** (⇧⌘R, or 🔔 → Remind Me and Close) sets the date and hides the note right away, e.g. write it today and have it back on December 1. The **Upcoming** tab of the note list shows every note waiting for a reminder, soonest first.
 - **Sounds**: pick any system sound or your own audio file, per note too. Set the volume, repeat until you touch the note, have the title read aloud, mark reminders as Important, and set quiet hours. Optional interface sounds.
 - Sync between Macs through iCloud Drive. Notes are merged one by one and the most recent change wins.
@@ -31,7 +33,7 @@ The interface is in English, and in Italian when the Mac's language is Italian.
 **Getting started**
 - A welcome window on first launch explains each permission (notifications, open at login, Apple Intelligence, screen recording) with a button to grant it and a live ✓ status. Nothing is asked before you choose.
 - Settings with a sidebar, like System Settings.
-- Update check: Foglietti looks at this repository's releases once a day and tells you when a new version is out (Download / Later / Skip This Version). It can be turned off.
+- Update check: Stickling looks at this repository's releases once a day and tells you when a new version is out (Download / Later / Skip This Version). It can be turned off.
 
 **Sharing**
 - Formatted email (⇧⌘M), WhatsApp with formatting converted (⌃⌘W), and the system Share menu.
@@ -40,7 +42,7 @@ The interface is in English, and in Italian when the Mac's language is Italian.
 **On-device intelligence**
 - ✨ Apple Intelligence (⌘J): summarize, proofread, rewrite, change tone, turn into a checklist, keep writing, or give a custom instruction (⇧⌘J). The menu actions are editable in Settings.
 - **Find reminder in text** spots phrases like "Thursday at 5:30 PM" and offers to set the reminder.
-- **Ask Foglietti** (⌃⌥Space from any app, or a shortcut you choose): "remind me tomorrow at 9 to…", "what reminders do I have?", "what does the note about… say?".
+- **Ask Stickling** (⌃⌥Space from any app, or a shortcut you choose): "remind me tomorrow at 9 to…", "what reminders do I have?", "what does the note about… say?".
 - 🌐 Translation with Apple Translate (⌥⌘T): 20 languages, automatic source-language detection, works offline.
 
 ## Requirements
@@ -52,7 +54,7 @@ The interface is in English, and in Italian when the Mac's language is Italian.
 ## Build and install
 
 ```bash
-./build.sh            # creates build/Foglietti.app
+./build.sh            # creates build/Stickling.app
 ./build.sh install    # also copies it to /Applications
 ```
 
@@ -60,14 +62,14 @@ With Xcode installed, the build also compiles the layered macOS 26 icon in `Reso
 
 The build gets a local (ad-hoc) signature, so it runs on the Mac where you build it. To distribute it, sign it with a Developer ID and notarize it.
 
-On first launch a welcome window lets you turn on notifications and open at login. You can reopen it from the Foglietti menu → Welcome…
+On first launch a welcome window lets you turn on notifications and open at login. You can reopen it from the Stickling menu → Welcome…
 
 ## Main shortcuts
 
 | Action | Keys |
 |---|---|
 | New note (from any app) | ⌃⌥N (configurable) |
-| Ask Foglietti (from any app) | ⌃⌥Space (configurable) |
+| Ask Stickling (from any app) | ⌃⌥Space (configurable) |
 | AI actions / custom instruction | ⌘J / ⇧⌘J |
 | Translate | ⌥⌘T |
 | Emoji | ⌃⌘E |
@@ -80,13 +82,13 @@ The full list is in Settings → Shortcuts.
 
 ## Data and privacy
 
-- Notes are stored in `~/Library/Application Support/Foglietti/foglietti.json`, or in iCloud Drive if you turn on sync. The file is readable JSON, and the text is stored as RTFD so it keeps formatting and images.
+- Notes are stored in `~/Library/Application Support/Stickling/stickling.json`, or in iCloud Drive if you turn on sync. The file is readable JSON, and the text is stored as RTFD so it keeps formatting and images.
 - Protected notes are stored only encrypted, in the data file, in backups and in iCloud Drive. Protecting a note rewrites the backup right away, so no plain copy is left there. The master password is never saved; if you forget it, protected notes can't be recovered.
 - With Touch ID on, the key derived from the master password is kept in your login keychain and released after Touch ID inside the app. macOS protects the keychain item, but with a local (ad-hoc) signature it can't be bound to biometrics at the system level; that needs a Developer ID build.
-- When protected notes lock (after inactivity, on sleep, on screen lock or on quit), Foglietti clears the note's undo history, closes AI and Translate panels and deletes the images it wrote to the temporary folder.
+- When protected notes lock (after inactivity, on sleep, on screen lock or on quit), Stickling clears the note's undo history, closes AI and Translate panels and deletes the images it wrote to the temporary folder.
 - If another Mac syncs an unprotected copy of a protected note, the protected version is kept.
 - Protect a note *before* writing secrets in it: copies made earlier by Time Machine or by iCloud Drive's version history stay as they were.
-- A backup copy, `foglietti.backup.json`, is made at every launch.
+- A backup copy, `stickling.backup.json`, is made at every launch.
 - Apple Intelligence and Apple Translate run on the Mac: the text of your notes is never sent to any server.
 - The update check only reads the public release list of this repository on GitHub, once a day; it sends no data about you or your notes, and it can be turned off in Settings → About & Updates.
 
@@ -112,7 +114,7 @@ English is the base language: the English text is the key. Translations live in 
 | `Vault.swift` | Protected notes: master password, encryption, Touch ID, auto-lock |
 | `Localization.swift` | `L()` helper for localized text |
 
-To try the assistant from the terminal: `.build/release/Foglietti --ask "what reminders do I have?"`
+To try the assistant from the terminal: `.build/release/Stickling --ask "what reminders do I have?"`
 
 ## License
 

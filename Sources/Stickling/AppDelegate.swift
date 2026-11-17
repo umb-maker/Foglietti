@@ -18,7 +18,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         updateAskMenuItem()
 
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        statusItem.button?.image = NSImage(systemSymbolName: "note.text", accessibilityDescription: "Foglietti")
+        statusItem.button?.image = NSImage(systemSymbolName: "note.text", accessibilityDescription: "Stickling")
         let menu = NSMenu()
         menu.delegate = self
         statusItem.menu = menu
@@ -45,7 +45,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
 
-    /// The menu shows the current "Ask Foglietti" shortcut (the global hotkey handles it when Foglietti isn't in front).
+    /// The menu shows the current "Ask Stickling" shortcut (the global hotkey handles it when Stickling isn't in front).
     private func updateAskMenuItem() {
         guard let item = NSApp.mainMenu?.items.compactMap(\.submenu).flatMap(\.items).first(where: { $0.action == #selector(showAsk) }) else { return }
         let s = store.settings
@@ -69,14 +69,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     func showList() {
         if listWindow == nil {
-            listWindow = makeWindow(title: L("Foglietti – Note list"), view: NotesListView(), size: NSSize(width: 560, height: 480), resizable: true)
+            listWindow = makeWindow(title: L("Stickling – Note list"), view: NotesListView(), size: NSSize(width: 560, height: 480), resizable: true)
         }
         present(listWindow)
     }
 
     @objc func showSettings() {
         if settingsWindow == nil {
-            settingsWindow = makeWindow(title: L("Foglietti Settings"), view: SettingsView(), size: NSSize(width: 860, height: 600), resizable: true)
+            settingsWindow = makeWindow(title: L("Stickling Settings"), view: SettingsView(), size: NSSize(width: 860, height: 600), resizable: true)
         }
         present(settingsWindow)
     }
@@ -117,7 +117,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         add(L("Note list…"), #selector(openList), symbol: "list.bullet.rectangle")
         if Reminders.shared.isRinging { add(L("Silence reminders"), #selector(silence), symbol: "bell.slash") }
-        add(L("Ask Foglietti…"), #selector(showAsk), symbol: "sparkles")
+        add(L("Ask Stickling…"), #selector(showAsk), symbol: "sparkles")
 
         let recent = store.notes.filter(\.isActive).sorted { $0.modified > $1.modified }.prefix(10)
         if !recent.isEmpty {
@@ -133,7 +133,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         menu.addItem(.separator())
         add(L("Settings…"), #selector(showSettings), ",")
-        add(L("Quit Foglietti"), #selector(NSApplication.terminate(_:)), "q")
+        add(L("Quit Stickling"), #selector(NSApplication.terminate(_:)), "q")
         menu.items.last?.target = NSApp
     }
 
@@ -179,15 +179,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         let fm = NSFontManager.shared
 
-        submenu("Foglietti", [
-            item(L("About Foglietti"), #selector(NSApplication.orderFrontStandardAboutPanel(_:)), target: NSApp),
+        submenu("Stickling", [
+            item(L("About Stickling"), #selector(NSApplication.orderFrontStandardAboutPanel(_:)), target: NSApp),
             item(L("Welcome…"), #selector(showWelcome), target: self),
             item(L("Check for Updates…"), #selector(checkForUpdates), target: self),
             .separator(),
             item(L("Settings…"), #selector(showSettings), ",", target: self),
             .separator(),
-            item(L("Hide Foglietti"), #selector(NSApplication.hide(_:)), "h", target: NSApp),
-            item(L("Quit Foglietti"), #selector(NSApplication.terminate(_:)), "q", target: NSApp),
+            item(L("Hide Stickling"), #selector(NSApplication.hide(_:)), "h", target: NSApp),
+            item(L("Quit Stickling"), #selector(NSApplication.terminate(_:)), "q", target: NSApp),
         ])
         submenu(L("File"), [
             item(L("New note"), #selector(newNote), "n", target: self),
@@ -245,7 +245,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             item(L("Align right"), #selector(NSText.alignRight(_:)), "}", [.command]),
         ])
         submenu("AI", [
-            item(L("Ask Foglietti…"), #selector(showAsk), target: self),
+            item(L("Ask Stickling…"), #selector(showAsk), target: self),
             .separator(),
             item(L("Note actions…"), #selector(NoteWindowController.showAIMenu(_:)), "j"),
             item(L("Custom instruction…"), #selector(NoteWindowController.runAIFreePrompt), "j", [.command, .shift]),
@@ -266,7 +266,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     // MARK: First note
 
     private func createWelcomeNote() {
-        let text = L("Welcome to Foglietti\n\nEverything is customizable: click 🎨 at the top for colors, fonts, opacity, corners, borders and themes.\n☐ Double-click the bar to collapse the note\n☐ ⌃⌥N creates a note from any app\n☐ ⇧⌘L adds a checkbox, click it to tick it\n☑ ✨ and 🌐 summarize, rewrite and translate your notes")
+        let text = L("Welcome to Stickling\n\nEverything is customizable: click 🎨 at the top for colors, fonts, opacity, corners, borders and themes.\n☐ Double-click the bar to collapse the note\n☐ ⌃⌥N creates a note from any app\n☐ ⇧⌘L adds a checkbox, click it to tick it\n☑ ✨ and 🌐 summarize, rewrite and translate your notes")
         NotesManager.shared.newNote(styledText: { style in
             let a = NSMutableAttributedString(string: text, attributes: style.typingAttributes)
             let first = (text as NSString).paragraphRange(for: NSRange(location: 0, length: 0))

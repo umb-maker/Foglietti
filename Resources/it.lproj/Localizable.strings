@@ -1,8 +1,8 @@
-/* Foglietti: traduzione italiana. Chiave = testo inglese. */
+/* Stickling: traduzione italiana. Chiave = testo inglese. */
 
 "%ld notes" = "%ld note";
 "AI actions on the note" = "Azioni AI sulla nota";
-"About Foglietti" = "Informazioni su Foglietti";
+"About Stickling" = "Informazioni su Stickling";
 "Actions in the note's ✨ menu" = "Azioni nel menu ✨ della nota";
 "Add below" = "Aggiungi sotto";
 "Add language" = "Aggiungi lingua";
@@ -22,8 +22,8 @@
 "Apply to all notes" = "Applica a tutte le note";
 "Archive" = "Archivio";
 "Archive note" = "Archivia";
-"Ask Foglietti (from any app)" = "Chiedi a Foglietti (da qualsiasi app)";
-"Ask Foglietti…" = "Chiedi a Foglietti…";
+"Ask Stickling (from any app)" = "Chiedi a Stickling (da qualsiasi app)";
+"Ask Stickling…" = "Chiedi a Stickling…";
 "Ask before deleting permanently" = "Chiedi conferma prima di eliminare definitivamente";
 "Ask, or ask me to do something…" = "Chiedi o chiedi di fare qualcosa…";
 "Background" = "Sfondo";
@@ -98,9 +98,9 @@
 "Find reminder in text" = "Trova promemoria nel testo";
 "Find…" = "Trova…";
 "Fix spelling, grammar and punctuation. Do not change the meaning or the style. Return only the corrected text." = "Correggi ortografia, grammatica e punteggiatura. Non cambiare il significato né lo stile. Restituisci solo il testo corretto.";
-"Foglietti Settings" = "Impostazioni di Foglietti";
-"Foglietti themes.json" = "Temi Foglietti.json";
-"Foglietti – Note list" = "Foglietti – Elenco note";
+"Stickling Settings" = "Impostazioni di Stickling";
+"Stickling themes.json" = "Temi Stickling.json";
+"Stickling – Note list" = "Stickling – Elenco note";
 "Food" = "Cibo";
 "Formal tone" = "Tono formale";
 "Format" = "Formato";
@@ -112,7 +112,7 @@
 "Hearts" = "Cuori";
 "Height" = "Altezza";
 "Hide" = "Nascondi";
-"Hide Foglietti" = "Nascondi Foglietti";
+"Hide Stickling" = "Nascondi Stickling";
 "Hide all" = "Nascondi tutte";
 "Highlight" = "Evidenzia";
 "Home" = "Casa";
@@ -132,7 +132,7 @@
 "Insert date" = "Inserisci data";
 "Insert screenshot" = "Inserisci screenshot";
 "Insert screenshot…" = "Inserisci screenshot…";
-"Install Foglietti on each Mac and turn this on: notes are merged and kept in sync (the most recent change wins). If the folder already holds notes, they are merged, not overwritten." = "Su ogni Mac installa Foglietti e attiva questa opzione: le note si uniscono e restano allineate (vince la modifica più recente). Se nella cartella c'è già un archivio, le note vengono unite, non sovrascritte.";
+"Install Stickling on each Mac and turn this on: notes are merged and kept in sync (the most recent change wins). If the folder already holds notes, they are merged, not overwritten." = "Su ogni Mac installa Stickling e attiva questa opzione: le note si uniscono e restano allineate (vince la modifica più recente). Se nella cartella c'è già un archivio, le note vengono unite, non sovrascritte.";
 "Instruction for the AI" = "Istruzione per l'AI";
 "Italic" = "Corsivo";
 "Keep writing" = "Continua a scrivere";
@@ -191,7 +191,7 @@
 "Preferred languages appear at the top of the 🌐 menu. ⌥⌘T translates right away into the first language that differs from the text's. The first time, macOS asks to download the languages; after that it also works offline." = "Le lingue preferite stanno in cima al menu 🌐. ⌥⌘T traduce subito nella prima lingua diversa da quella del testo. La prima volta macOS chiede di scaricare le lingue: poi funziona anche offline.";
 "Priority" = "Priorità";
 "Proofread" = "Correggi";
-"Quit Foglietti" = "Esci da Foglietti";
+"Quit Stickling" = "Esci da Stickling";
 "Random theme for each new note" = "Tema casuale per ogni nuova nota";
 "Ready. The model runs on this Mac: notes are never sent to any server." = "Pronta. Il modello gira su questo Mac: le note non vengono inviate a nessun server.";
 "Recent" = "Recenti";
@@ -322,7 +322,7 @@
 "✅ Created the note “%@” with a reminder %@." = "✅ Ho creato la nota «%@» con promemoria %@.";
 "✅ Created the note “%@”." = "✅ Ho creato la nota «%@».";
 "🔔 Reminder set on the note “%@” %@." = "🔔 Promemoria impostato sulla nota «%@» %@.";
-"Welcome to Foglietti\n\nEverything is customizable: click 🎨 at the top for colors, fonts, opacity, corners, borders and themes.\n☐ Double-click the bar to collapse the note\n☐ ⌃⌥N creates a note from any app\n☐ ⇧⌘L adds a checkbox, click it to tick it\n☑ ✨ and 🌐 summarize, rewrite and translate your notes" = "Benvenuto in Foglietti\n\nOgni cosa è personalizzabile: clicca 🎨 in alto per colori, font, opacità, angoli, bordi e temi.\n☐ Doppio clic sulla barra per ridurre la nota\n☐ ⌃⌥N crea una nota da qualsiasi app\n☐ ⇧⌘L aggiunge una casella, clicca per spuntarla\n☑ ✨ e 🌐 riassumono, riscrivono e traducono le note";
+"Welcome to Stickling\n\nEverything is customizable: click 🎨 at the top for colors, fonts, opacity, corners, borders and themes.\n☐ Double-click the bar to collapse the note\n☐ ⌃⌥N creates a note from any app\n☐ ⇧⌘L adds a checkbox, click it to tick it\n☑ ✨ and 🌐 summarize, rewrite and translate your notes" = "Benvenuto in Stickling\n\nOgni cosa è personalizzabile: clicca 🎨 in alto per colori, font, opacità, angoli, bordi e temi.\n☐ Doppio clic sulla barra per ridurre la nota\n☐ ⌃⌥N crea una nota da qualsiasi app\n☐ ⇧⌘L aggiunge una casella, clicca per spuntarla\n☑ ✨ e 🌐 riassumono, riscrivono e traducono le note";
 
 /* 1.1: suoni */
 "%ld min" = "%ld min";
@@ -356,7 +356,7 @@
 "AI & Translation" = "AI e traduzione";
 "About & Updates" = "Info e aggiornamenti";
 "Allow" = "Consenti";
-"Ask Foglietti, from any app" = "Chiedi a Foglietti, da qualsiasi app";
+"Ask Stickling, from any app" = "Chiedi a Stickling, da qualsiasi app";
 "Check Now" = "Controlla ora";
 "Check for Updates…" = "Controlla aggiornamenti…";
 "Check for updates automatically" = "Controlla automaticamente gli aggiornamenti";
@@ -365,9 +365,9 @@
 "Customizable sticky notes for macOS." = "Note adesive personalizzabili per macOS.";
 "Data & Sync" = "Dati e sincronizzazione";
 "Download" = "Scarica";
-"Foglietti %@ is available" = "È disponibile Foglietti %@";
-"Foglietti is up to date." = "Foglietti è aggiornato.";
-"Foglietti looks at the public releases on GitHub once a day. Nothing is downloaded or installed without you." = "Foglietti controlla le versioni pubblicate su GitHub una volta al giorno. Non scarica né installa nulla senza di te.";
+"Stickling %@ is available" = "È disponibile Stickling %@";
+"Stickling is up to date." = "Stickling è aggiornato.";
+"Stickling looks at the public releases on GitHub once a day. Nothing is downloaded or installed without you." = "Stickling controlla le versioni pubblicate su GitHub una volta al giorno. Non scarica né installa nulla senza di te.";
 "Good to know" = "Da sapere";
 "Later" = "Più tardi";
 "License" = "Licenza";
@@ -382,16 +382,16 @@
 "Screen Recording (optional)" = "Registrazione schermo (facoltativa)";
 "Show the welcome window" = "Mostra la finestra di benvenuto";
 "Skip This Version" = "Salta questa versione";
-"So reminders reach you even when Foglietti is in the background." = "Così i promemoria ti raggiungono anche quando Foglietti è in secondo piano.";
+"So reminders reach you even when Stickling is in the background." = "Così i promemoria ti raggiungono anche quando Stickling è in secondo piano.";
 "Source code on GitHub" = "Codice sorgente su GitHub";
-"Start using Foglietti" = "Inizia a usare Foglietti";
+"Start using Stickling" = "Inizia a usare Stickling";
 "Sticky notes you can shape any way you like. A few things work better with your permission: each one is optional, and you can change it later." = "Note adesive da personalizzare come vuoi. Alcune funzioni rendono di più con il tuo permesso: ognuno è facoltativo e puoi cambiarlo in seguito.";
 "Stop skipping version %@" = "Non saltare più la versione %@";
-"Summaries, rewriting and Ask Foglietti run on your Mac. Nothing to allow." = "Riassunti, riscritture e Chiedi a Foglietti girano sul tuo Mac. Non serve nessun permesso.";
+"Summaries, rewriting and Ask Stickling run on your Mac. Nothing to allow." = "Riassunti, riscritture e Chiedi a Stickling girano sul tuo Mac. Non serve nessun permesso.";
 "Turn on" = "Attiva";
 "Updates" = "Aggiornamenti";
 "Version %@" = "Versione %@";
-"Welcome to Foglietti" = "Benvenuto in Foglietti";
+"Welcome to Stickling" = "Benvenuto in Stickling";
 "Welcome…" = "Benvenuto…";
 "You have version %@, the latest one." = "Hai la versione %@, la più recente.";
 "You have version %@." = "Hai la versione %@.";
@@ -400,13 +400,13 @@
 "everything else is in the menu bar icon" = "tutto il resto è nell'icona della barra dei menu";
 "new note, from any app" = "nuova nota, da qualsiasi app";
 
-/* 1.3: scorciatoia di Chiedi a Foglietti */
+/* 1.3: scorciatoia di Chiedi a Stickling */
 "Add at least one modifier key (⌃ ⌥ ⇧ ⌘)." = "Aggiungi almeno un tasto modificatore (⌃ ⌥ ⇧ ⌘).";
-"Ask Foglietti from any app" = "Chiedi a Foglietti da qualsiasi app";
+"Ask Stickling from any app" = "Chiedi a Stickling da qualsiasi app";
 "If nothing happens when you press it, another app (a launcher, a taskbar…) is using the same combination: pick another one, e.g. ⌃⌥A." = "Se premendola non succede nulla, un'altra app (un launcher, una barra…) usa la stessa combinazione: scegline un'altra, per esempio ⌃⌥A.";
 "It's the same combination as New note: choose a different one." = "È la stessa combinazione di Nuova nota: scegline un'altra.";
 "Space" = "Spazio";
-"\"Ask Foglietti\" from any app with %@" = "\"Chiedi a Foglietti\" da qualsiasi app con %@";
+"\"Ask Stickling\" from any app with %@" = "\"Chiedi a Stickling\" da qualsiasi app con %@";
 
 /* 1.4: note protette */
 "%ld min of inactivity" = "%ld min di inattività";
@@ -466,3 +466,6 @@
 "%@ at 9 AM" = "%@ alle 9:00";
 "Upcoming" = "In programma";
 "No upcoming reminders" = "Nessun promemoria in programma";
+
+/* 1.6: nuovo nome */
+"Foglietti is now called Stickling. Your notes, themes and settings came along. macOS ties permissions to the app's name, so turn notifications and open at login back on below." = "Foglietti ora si chiama Stickling. Note, temi e impostazioni sono stati trasferiti. macOS lega i permessi al nome dell'app: riattiva qui sotto le notifiche e l'apertura al login.";

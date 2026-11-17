@@ -22,12 +22,12 @@ final class NoteStore: ObservableObject {
 
     @Published private(set) var directory: URL
     @Published private(set) var lastSync: Date?
-    var fileURL: URL { directory.appendingPathComponent("foglietti.json") }
+    var fileURL: URL { directory.appendingPathComponent("stickling.json") }
 
-    static let localDirectory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-        .appendingPathComponent("Foglietti", isDirectory: true)
-    static let iCloudRoot = URL(fileURLWithPath: NSString(string: "~/Library/Mobile Documents/com~apple~CloudDocs").expandingTildeInPath)
-    static let iCloudDirectory = iCloudRoot.appendingPathComponent("Foglietti", isDirectory: true)
+    nonisolated static let localDirectory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        .appendingPathComponent("Stickling", isDirectory: true)
+    nonisolated static let iCloudRoot = URL(fileURLWithPath: NSString(string: "~/Library/Mobile Documents/com~apple~CloudDocs").expandingTildeInPath)
+    static let iCloudDirectory = iCloudRoot.appendingPathComponent("Stickling", isDirectory: true)
     static var iCloudAvailable: Bool { FileManager.default.fileExists(atPath: iCloudRoot.path) }
     var usesICloud: Bool { directory.standardizedFileURL == Self.iCloudDirectory.standardizedFileURL }
 
@@ -62,11 +62,13 @@ final class NoteStore: ObservableObject {
     // MARK: Reading
 
     private func readDisk() -> Persisted? {
-        let placeholder = directory.appendingPathComponent(".foglietti.json.icloud")
+        let placeholder = directory.appendingPathComponent(".stickling.json.icloud")
         if FileManager.default.fileExists(atPath: placeholder.path) {
             // iCloud evicted the file to save space: request it again
             try? FileManager.default.startDownloadingUbiquitousItem(at: fileURL)
         }
+        // a folder still holding the file under the app's old name (e.g. picked before the rename)
+        if !FileManager.default.fileExists(atPath: fileURL.path) { LegacyMigration.renameFiles(in: directory) }
         guard let data = try? Data(contentsOf: fileURL) else { return nil }
         knownModDate = modDate()
         let dec = JSONDecoder()
@@ -79,9 +81,9 @@ final class NoteStore: ObservableObject {
             return try dec.decode(Persisted.self, from: data)
         } catch {
             // unreadable file: set it aside instead of overwriting it
-            let bad = directory.appendingPathComponent("foglietti-unreadable-\(Int(Date().timeIntervalSince1970)).json")
+            let bad = directory.appendingPathComponent("stickling-unreadable-\(Int(Date().timeIntervalSince1970)).json")
             try? FileManager.default.copyItem(at: fileURL, to: bad)
-            NSLog("Foglietti: could not read data (\(error)); copy saved to \(bad.path)")
+            NSLog("Stickling: could not read data (\(error)); copy saved to \(bad.path)")
             return nil
         }
     }
@@ -200,7 +202,7 @@ final class NoteStore: ObservableObject {
             lastWritten = data
             knownModDate = modDate()
         } catch {
-            NSLog("Foglietti: save failed: \(error)")
+            NSLog("Stickling: save failed: \(error)")
         }
     }
 
@@ -208,7 +210,7 @@ final class NoteStore: ObservableObject {
     var backupURL: URL {
         let dir = usesICloud ? Self.localDirectory : directory
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-        return dir.appendingPathComponent("foglietti.backup.json")
+        return dir.appendingPathComponent("stickling.backup.json")
     }
 
     /// Replaces the backup with the current (encrypted) state: called when a note gets protected,

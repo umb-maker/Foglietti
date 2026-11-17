@@ -5,7 +5,7 @@ import AppKit
 @MainActor
 final class UpdateChecker {
     static let shared = UpdateChecker()
-    static let repository = "umb-maker/Foglietti"
+    static let repository = "umb-maker/Stickling"
 
     private var timer: Timer?
     private var lastCheckKey = "lastUpdateCheck"
@@ -42,7 +42,7 @@ final class UpdateChecker {
                 return
             }
             guard Self.isNewer(release.version, than: currentVersion) else {
-                if manual { NSAlert.simple(L("Foglietti is up to date."), info: L("You have version %@, the latest one.", currentVersion)) }
+                if manual { NSAlert.simple(L("Stickling is up to date."), info: L("You have version %@, the latest one.", currentVersion)) }
                 return
             }
             if !manual && store.settings.skippedVersion == release.version { return }
@@ -79,7 +79,7 @@ final class UpdateChecker {
     private func present(_ r: Release) {
         let a = NSAlert()
         a.icon = NSApp.applicationIconImage
-        a.messageText = L("Foglietti %@ is available", r.version)
+        a.messageText = L("Stickling %@ is available", r.version)
         a.informativeText = L("You have version %@.", currentVersion) + "\n\n" + Self.summary(r.notes)
         a.addButton(withTitle: L("Download"))
         a.addButton(withTitle: L("Later"))

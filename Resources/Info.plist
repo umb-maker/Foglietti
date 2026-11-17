@@ -5,28 +5,28 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>Foglietti</string>
+	<string>Stickling</string>
 	<key>CFBundleExecutable</key>
-	<string>Foglietti</string>
+	<string>Stickling</string>
 	<key>CFBundleIconFile</key>
 	<string>AppIcon</string>
 	<key>CFBundleIconName</key>
 	<string>AppIcon</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.umbertocaputo.foglietti</string>
+	<string>com.umbertocaputo.stickling</string>
 	<key>CFBundleLocalizations</key>
 	<array>
 		<string>en</string>
 		<string>it</string>
 	</array>
 	<key>CFBundleName</key>
-	<string>Foglietti</string>
+	<string>Stickling</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.5.0</string>
+	<string>1.6.0</string>
 	<key>CFBundleVersion</key>
-	<string>7</string>
+	<string>8</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.productivity</string>
 	<key>LSMinimumSystemVersion</key>

@@ -85,7 +85,7 @@ struct AIResultView: View {
     }
 }
 
-// MARK: - "Ask Foglietti"
+// MARK: - "Ask Stickling"
 
 @MainActor
 final class AskModel: ObservableObject {

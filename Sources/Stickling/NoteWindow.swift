@@ -580,7 +580,7 @@ final class NoteWindowController: NSWindowController, NSWindowDelegate, NSTextVi
             m.addItem(rem)
         }
         m.addItem(.separator())
-        let ask = NSMenuItem(title: L("Ask Foglietti…"), action: #selector(AppDelegate.showAsk), keyEquivalent: "")
+        let ask = NSMenuItem(title: L("Ask Stickling…"), action: #selector(AppDelegate.showAsk), keyEquivalent: "")
         ask.target = NSApp.delegate
         m.addItem(ask)
         let anchor = aiButton!

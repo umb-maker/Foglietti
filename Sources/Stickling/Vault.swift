@@ -24,7 +24,7 @@ struct ProtectedPayload: Codable {
 @MainActor
 final class Vault {
     static let shared = Vault()
-    static let changed = Notification.Name("FogliettiVaultChanged")
+    static let changed = Notification.Name("SticklingVaultChanged")
 
     enum VaultError: LocalizedError {
         case notUnlocked, wrongPassword
@@ -42,6 +42,7 @@ final class Vault {
     private var store: NoteStore { NoteStore.shared }
     private var lastActivity = Date()
     private var timer: Timer?
+    // format constant from the first release under the old name: changing it would lock out existing vaults
     private static let checkText = Data("foglietti-vault-check".utf8)
     private static let rounds = 600_000
 
@@ -97,7 +98,7 @@ final class Vault {
         didUnlock(k)
     }
 
-    /// Rejects vault data that can't come from Foglietti (e.g. a tampered data file),
+    /// Rejects vault data that can't come from Stickling (e.g. a tampered data file),
     /// instead of hanging or crashing on an absurd number of rounds.
     private static func isPlausible(_ v: VaultInfo) -> Bool {
         (100_000...10_000_000).contains(v.rounds) && v.salt.count >= 16 && v.check.count >= 28
@@ -126,12 +127,12 @@ final class Vault {
         store.rewriteBackup()   // the backup must not keep notes encrypted with the old password
     }
 
-    /// Removes the images Foglietti wrote to the temporary folder (Preview, email attachments, drops,
+    /// Removes the images Stickling wrote to the temporary folder (Preview, email attachments, drops,
     /// screenshots): they may come from protected notes.
     static func purgeTemporaryFiles() {
         let tmp = FileManager.default.temporaryDirectory
         let items = (try? FileManager.default.contentsOfDirectory(at: tmp, includingPropertiesForKeys: nil)) ?? []
-        for url in items where url.lastPathComponent.hasPrefix("Foglietti-") { try? FileManager.default.removeItem(at: url) }
+        for url in items where url.lastPathComponent.hasPrefix("Stickling-") { try? FileManager.default.removeItem(at: url) }
     }
 
     private static func verify(_ k: SymmetricKey, _ v: VaultInfo) -> Bool {
@@ -167,7 +168,7 @@ final class Vault {
 
     // MARK: Touch ID (key kept in the login keychain, released after Touch ID)
 
-    private let service = "com.umbertocaputo.foglietti.vault"
+    private let service = "com.umbertocaputo.stickling.vault"
     private var keychainQuery: [String: Any] {
         [kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: service, kSecAttrAccount as String: "key"]
     }
@@ -183,11 +184,14 @@ final class Vault {
         deleteKeyFromKeychain()
         var q = keychainQuery
         q[kSecValueData as String] = k.withUnsafeBytes { Data($0) }
-        q[kSecAttrLabel as String] = "Foglietti protected notes"
+        q[kSecAttrLabel as String] = "Stickling protected notes"
         SecItemAdd(q as CFDictionary, nil)
     }
 
-    func deleteKeyFromKeychain() { SecItemDelete(keychainQuery as CFDictionary) }
+    func deleteKeyFromKeychain() {
+        SecItemDelete(keychainQuery as CFDictionary)
+        if LegacyMigration.hasOldKeychainKey { LegacyMigration.deleteOldKeychainKey() }
+    }
 
     private func keyFromKeychain() -> SymmetricKey? {
         var q = keychainQuery
@@ -212,6 +216,18 @@ final class Vault {
             ctx.localizedFallbackTitle = L("Use Master Password")
             if (try? await ctx.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason)) == true,
                let k = keyFromKeychain(), let v = store.vault, Self.verify(k, v) {
+                didUnlock(k)
+                return true
+            }
+        } else if store.settings.vaultTouchID, LegacyMigration.hasOldKeychainKey {
+            // key saved under the app's old name: move it over after Touch ID
+            let ctx = LAContext()
+            ctx.localizedFallbackTitle = L("Use Master Password")
+            if (try? await ctx.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason)) == true,
+               let d = LegacyMigration.takeOldKeychainKey(), let v = store.vault, Self.verify(SymmetricKey(data: d), v) {
+                let k = SymmetricKey(data: d)
+                saveKeyInKeychain(k)
+                LegacyMigration.deleteOldKeychainKey()
                 didUnlock(k)
                 return true
             }

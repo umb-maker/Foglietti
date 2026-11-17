@@ -1,13 +1,13 @@
 #!/bin/bash
-# Builds Foglietti and creates Foglietti.app in build/.  Usage: ./build.sh [install]
+# Builds Stickling and creates Stickling.app in build/.  Usage: ./build.sh [install]
 set -euo pipefail
 cd "$(dirname "$0")"
 
 swift build -c release
-APP=build/Foglietti.app
+APP=build/Stickling.app
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
-cp .build/release/Foglietti "$APP/Contents/MacOS/Foglietti"
+cp .build/release/Stickling "$APP/Contents/MacOS/Stickling"
 cp Resources/Info.plist "$APP/Contents/Info.plist"
 cp -R Resources/*.lproj "$APP/Contents/Resources/"
 
@@ -38,8 +38,8 @@ codesign --force --sign - "$APP"
 echo "Created $APP"
 
 if [ "${1:-}" = "install" ]; then
-    pkill -x Foglietti 2>/dev/null || true
-    rm -rf /Applications/Foglietti.app
+    pkill -x Stickling 2>/dev/null || true
+    rm -rf /Applications/Stickling.app
     cp -R "$APP" /Applications/
-    echo "Installed to /Applications/Foglietti.app"
+    echo "Installed to /Applications/Stickling.app"
 fi

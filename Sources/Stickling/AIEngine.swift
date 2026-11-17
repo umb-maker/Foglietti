@@ -155,7 +155,7 @@ enum AIEngine {
         // the small model sometimes drifts to another language: name the request's language explicitly
         let language = Translator.detect(question).flatMap { Locale(identifier: "en").localizedString(forLanguageCode: $0) } ?? "the language of the request"
         let planner = LanguageModelSession(instructions: """
-        You interpret requests made to Foglietti, a sticky-notes app. Pick the right action and fill in the fields.
+        You interpret requests made to Stickling, a sticky-notes app. Pick the right action and fill in the fields.
         Use ONLY the dates in the calendar. Write any note text in \(language).
         \(calendarText())
         Titles of the existing notes:

@@ -3,8 +3,47 @@ import ServiceManagement
 
 let args = CommandLine.arguments
 
+// Headless check of the move from the old name, on copies in a scratch folder:
+//   Stickling --migration-selftest /tmp/x
+if let i = args.firstIndex(of: "--migration-selftest"), i + 1 < args.count {
+    MainActor.assumeIsolated {
+        let root = URL(fileURLWithPath: args[i + 1], isDirectory: true), fm = FileManager.default
+        func check(_ ok: Bool, _ what: String) { print(ok ? "PASS" : "FAIL", what); if !ok { exit(1) } }
+        let support = root.appendingPathComponent("Support"), cloud = root.appendingPathComponent("CloudDocs")
+        let oldLocal = support.appendingPathComponent("Foglietti"), oldCloud = cloud.appendingPathComponent("Foglietti")
+        let newLocal = support.appendingPathComponent("Stickling"), newCloud = cloud.appendingPathComponent("Stickling")
+        for d in [oldLocal, oldCloud] { try? fm.createDirectory(at: d, withIntermediateDirectories: true) }
+        try? Data("local".utf8).write(to: oldLocal.appendingPathComponent("foglietti.json"))
+        try? Data("local backup".utf8).write(to: oldLocal.appendingPathComponent("foglietti.backup.json"))
+        try? Data("cloud".utf8).write(to: oldCloud.appendingPathComponent("foglietti.json"))
+        let suite = "com.umbertocaputo.stickling.migration-selftest"
+        let d = UserDefaults(suiteName: suite)!
+        d.removePersistentDomain(forName: suite)
+        let old: [String: Any] = ["dataDirectory": oldCloud.path, "welcomeShown": true, "recentEmoji": ["😀"]]
+        LegacyMigration.runIfNeeded(defaults: d, test: true, support: support, local: newLocal, iCloudRoot: cloud, oldPreferences: old)
+        let read = { (u: URL) in (try? String(contentsOf: u, encoding: .utf8)) ?? "" }
+        check(read(newLocal.appendingPathComponent("stickling.json")) == "local", "local notes copied to the new name")
+        check(read(newLocal.appendingPathComponent("stickling.backup.json")) == "local backup", "local backup copied")
+        check(read(newCloud.appendingPathComponent("stickling.json")) == "cloud", "iCloud Drive notes copied")
+        check(d.string(forKey: "dataDirectory") == newCloud.path, "iCloud Drive location points to the new folder")
+        check(fm.fileExists(atPath: oldLocal.appendingPathComponent("foglietti.json").path), "old files are left in place")
+        check(d.stringArray(forKey: "recentEmoji") == ["😀"], "preferences carried over")
+        check(!d.bool(forKey: "welcomeShown"), "welcome window shows again for permissions")
+        check(d.bool(forKey: LegacyMigration.migratedKey), "welcome window knows about the rename")
+        try? Data("changed".utf8).write(to: newLocal.appendingPathComponent("stickling.json"))
+        d.set(false, forKey: "legacyMigrationDone")
+        LegacyMigration.runIfNeeded(defaults: d, test: true, support: support, local: newLocal, iCloudRoot: cloud, oldPreferences: old)
+        check(read(newLocal.appendingPathComponent("stickling.json")) == "changed", "a second run never overwrites newer notes")
+        d.removePersistentDomain(forName: suite)
+        exit(0)
+    }
+}
+
+// first launch after the rename: bring notes and preferences over from the old name
+MainActor.assumeIsolated { LegacyMigration.runIfNeeded() }
+
 // Try the assistant from the terminal (read-only unless the question asks to create something):
-// Foglietti --ask "question"
+// Stickling --ask "question"
 if let i = args.firstIndex(of: "--ask"), i + 1 < args.count, #available(macOS 26.0, *) {
     let q = args[i + 1]
     let done = DispatchSemaphore(value: 0)
@@ -17,7 +56,7 @@ if let i = args.firstIndex(of: "--ask"), i + 1 < args.count, #available(macOS 26
     exit(0)
 }
 
-// Login-item status (for checks from the terminal):  Foglietti --login-status
+// Login-item status (for checks from the terminal):  Stickling --login-status
 if args.contains("--login-status") {
     let st = SMAppService.mainApp.status
     print(["notRegistered", "enabled", "requiresApproval", "notFound"][min(st.rawValue, 3)])
@@ -25,7 +64,7 @@ if args.contains("--login-status") {
 }
 
 // Headless check of protected-note encryption, only on a separate data folder:
-//   Foglietti --data-dir /tmp/x --vault-selftest
+//   Stickling --data-dir /tmp/x --vault-selftest
 if args.contains("--vault-selftest"), args.contains("--data-dir") {
     MainActor.assumeIsolated {
         let store = NoteStore.shared, vault = Vault.shared
